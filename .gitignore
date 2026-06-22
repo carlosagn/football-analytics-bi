@@ -1,0 +1,30 @@
+# Ambiente virtual
+venv/
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Variáveis de ambiente
+.env
+.env.*
+
+# VS Code
+.vscode/
+
+# Arquivos temporários
+*.log
+*.tmp
+
+# Dados locais
+data/raw/
+data/staging/
+data/processed/
+
+# Power BI
+*.pbix.autosave
