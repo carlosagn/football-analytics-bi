@@ -6,12 +6,11 @@ from football_analytics.config.constants import (
 from football_analytics.extract.api_client import ApiFootballClient
 from football_analytics.utils.helpers import save_json
 
-def extract_teams(
-    league_id: int,
-    season: int
-):
+def extract_teams(league_id: int, season: int):
 
     client = ApiFootballClient()
+
+    print("Extraindo equipes da API...")
 
     data = client.get(
         "teams",
@@ -21,10 +20,14 @@ def extract_teams(
         }
     )
 
-    save_json(
+    print("Salvando arquivo JSON...")
+
+    saved_file = save_json(
         data,
-        f"data/raw/teams_{season}.json"
+        f"data/raw/teams/{season}.json"
     )
+
+    print(f"Arquivo salvo em: {saved_file.resolve()}")
 
     return data
 

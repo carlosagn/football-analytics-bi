@@ -15,3 +15,13 @@ def save_json(data: dict, filepath: str):
             ensure_ascii=False,
             indent=4
         )
+
+    return path
+
+
+def load_json(filepath: str):
+
+    path = Path(filepath)
+
+    with open(path, "r", encoding="utf-8") as file:
+        return json.load(file)
