@@ -4,9 +4,17 @@ from football_analytics.config.constants import (
 )
 
 from football_analytics.extract.api_client import ApiFootballClient
-from football_analytics.utils.helpers import save_json
+from football_analytics.utils.helpers import load_json, save_json
 
 def extract_teams(league_id: int, season: int):
+    filepath = f"data/raw/teams/{season}.json"
+
+    try:
+        data = load_json(filepath)
+        print(f"Equipes de {season}: arquivo raw já preservado.")
+        return data
+    except FileNotFoundError:
+        pass
 
     client = ApiFootballClient()
 
@@ -24,7 +32,7 @@ def extract_teams(league_id: int, season: int):
 
     saved_file = save_json(
         data,
-        f"data/raw/teams/{season}.json"
+        filepath
     )
 
     print(f"Arquivo salvo em: {saved_file.resolve()}")
