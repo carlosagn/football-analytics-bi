@@ -1,55 +1,110 @@
+from pathlib import Path
+
 import pandas as pd
+
 from football_analytics.utils.helpers import load_json
 
 
-def transform_teams(data: dict):
+def _raw_team_files(raw_dir: str = "data/raw/teams"):
+    return sorted(Path(raw_dir).glob("*.json"))
 
-    teams = []
 
-    for item in data["response"]:
+def transform_team_seasons(raw_dir: str = "data/raw/teams"):
+    """One row per team and season."""
 
-        team = item["team"]
+    rows = []
 
-        teams.append({
-            "TeamID": team["id"],
-            "Name": team["name"],
-            "Code": team["code"],
-            "Founded": team["founded"],
-            "LogoURL": team["logo"],
-            "VenueID": item["venue"]["id"]
-        })
+    for file in _raw_team_files(raw_dir):
+        season = int(file.stem)
+        data = load_json(str(file))
 
-    return pd.DataFrame(teams)
+        for item in data.get("response", []):
+            team = item.get("team", {})
+            venue = item.get("venue", {})
 
-def transform_venues(data: dict):
+            rows.append(
+                {
+                    "Season": season,
+                    "TeamID": team.get("id"),
+                    "TeamName": team.get("name"),
+                    "TeamCode": team.get("code"),
+                    "Country": team.get("country"),
+                    "Founded": team.get("founded"),
+                    "IsNationalTeam": team.get("national"),
+                    "TeamLogoURL": team.get("logo"),
+                    "VenueID": venue.get("id"),
+                    "VenueName": venue.get("name"),
+                    "VenueCity": venue.get("city"),
+                    "VenueCapacity": venue.get("capacity"),
+                }
+            )
 
-    venues = []
+    return pd.DataFrame(rows).drop_duplicates(
+        subset=["Season", "TeamID"]
+    )
 
-    for item in data["response"]:
 
-        venue = item["venue"]
+def transform_teams(raw_dir: str = "data/raw/teams"):
+    """Team dimension, keeping the latest known descriptive values."""
 
-        venues.append({
-            "VenueID": venue["id"],
-            "Name": venue["name"],
-            "Address": venue["address"],
-            "City": venue["city"],
-            "Capacity": venue["capacity"],
-            "Surface": venue["surface"],
-            "ImageURL": venue["image"]
-        })
+    team_seasons = transform_team_seasons(raw_dir)
 
-    # Estádio pode aparecer em mais de um time, então é necessário remover duplicatas
-    return pd.DataFrame(venues).drop_duplicates()
+    if team_seasons.empty:
+        return team_seasons
+
+    columns = [
+        "TeamID",
+        "TeamName",
+        "TeamCode",
+        "Country",
+        "Founded",
+        "IsNationalTeam",
+        "TeamLogoURL",
+    ]
+
+    return (
+        team_seasons.sort_values(["TeamID", "Season"])
+        .drop_duplicates(subset=["TeamID"], keep="last")[columns]
+        .reset_index(drop=True)
+    )
+
+
+def transform_venues(raw_dir: str = "data/raw/teams"):
+    """Venue dimension from the teams endpoint."""
+
+    rows = []
+
+    for file in _raw_team_files(raw_dir):
+        data = load_json(str(file))
+
+        for item in data.get("response", []):
+            venue = item.get("venue", {})
+
+            rows.append(
+                {
+                    "VenueID": venue.get("id"),
+                    "VenueName": venue.get("name"),
+                    "VenueAddress": venue.get("address"),
+                    "VenueCity": venue.get("city"),
+                    "VenueCapacity": venue.get("capacity"),
+                    "VenueSurface": venue.get("surface"),
+                    "VenueImageURL": venue.get("image"),
+                }
+            )
+
+    df = pd.DataFrame(rows)
+
+    if df.empty:
+        return df
+
+    return (
+        df.dropna(subset=["VenueID"])
+        .drop_duplicates(subset=["VenueID"], keep="last")
+        .reset_index(drop=True)
+    )
+
 
 if __name__ == "__main__":
-
-    data = load_json("data/raw/teams/2024.json")
-
-    df_teams = transform_teams(data)
-    df_venues = transform_venues(data)
-
-    print(df_teams.head())
-    print()
-
-    print(df_venues.head())
+    print(transform_teams().head())
+    print(transform_team_seasons().head())
+    print(transform_venues().head())

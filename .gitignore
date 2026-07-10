@@ -22,9 +22,7 @@ __pycache__/
 *.tmp
 
 # Dados locais
-data/raw/
-data/staging/
-data/processed/
+data
 
 # Power BI
 *.pbix.autosave
