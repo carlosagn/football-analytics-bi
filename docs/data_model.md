@@ -4,6 +4,11 @@ Este modelo parte dos arquivos raw de `teams`, `fixtures` e `players`.
 A ideia é transformar JSON em tabelas utilizáveis no PostgreSQL, sem ainda
 fechar o desenho final do warehouse.
 
+Na reconstrução completa, o transform também materializa CSVs em
+`data/stage`. Na rotina incremental, os DataFrames são carregados diretamente
+no schema `stage`, substituindo somente a temporada solicitada. Os CSVs não são
+a fonte oficial da rotina incremental. Consulte `docs/incremental_pipeline.md`.
+
 # Tabelas de stage
 
 stage.teams

@@ -1,3 +1,4 @@
+import argparse
 from pathlib import Path
 
 from football_analytics.transform.fixtures import (
@@ -28,14 +29,20 @@ OUTPUTS = {
 }
 
 
-def run_all(output_dir: str = "data/stage"):
+def transform_all(season=None):
+    return {
+        name: transform(season=season)
+        for name, transform in OUTPUTS.items()
+    }
+
+
+def run_all(output_dir: str = "data/stage", season=None):
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
 
     results = {}
 
-    for name, transform in OUTPUTS.items():
-        df = transform()
+    for name, df in transform_all(season=season).items():
         filepath = output_path / f"{name}.csv"
         df.to_csv(filepath, index=False, encoding="utf-8")
         results[name] = {
@@ -51,4 +58,11 @@ def run_all(output_dir: str = "data/stage"):
 
 
 if __name__ == "__main__":
-    run_all()
+    parser = argparse.ArgumentParser(
+        description="Transforma todos os dados raw, opcionalmente por temporada."
+    )
+    parser.add_argument("--season", type=int)
+    parser.add_argument("--output-dir", default="data/stage")
+    args = parser.parse_args()
+
+    run_all(output_dir=args.output_dir, season=args.season)

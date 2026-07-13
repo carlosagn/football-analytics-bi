@@ -4,10 +4,29 @@ from pathlib import Path
 import pandas as pd
 
 from football_analytics.utils.helpers import load_json
+from football_analytics.utils.raw_snapshots import latest_complete_snapshot
 
 
-def _raw_fixture_files(raw_dir: str = "data/raw/fixtures"):
-    return sorted(Path(raw_dir).glob("*.json"))
+def _raw_fixture_files(raw_dir: str = "data/raw/fixtures", season=None):
+    raw_path = Path(raw_dir)
+
+    if season is not None:
+        snapshot = latest_complete_snapshot(raw_path, season)
+        if snapshot is not None:
+            return [snapshot / "fixtures.json"]
+        legacy_file = raw_path / f"{season}.json"
+        return [legacy_file] if legacy_file.exists() else []
+
+    by_season = {int(path.stem): path for path in raw_path.glob("*.json")}
+    snapshots_root = raw_path.parent / "snapshots"
+    if snapshots_root.exists():
+        for season_dir in snapshots_root.iterdir():
+            if not season_dir.is_dir() or not season_dir.name.isdigit():
+                continue
+            snapshot = latest_complete_snapshot(raw_path, int(season_dir.name))
+            if snapshot is not None:
+                by_season[int(season_dir.name)] = snapshot / "fixtures.json"
+    return [by_season[key] for key in sorted(by_season)]
 
 
 def _round_number(round_name):
@@ -45,12 +64,12 @@ def _result_label(home_goals, away_goals):
     return "Draw"
 
 
-def transform_fixtures(raw_dir: str = "data/raw/fixtures"):
+def transform_fixtures(raw_dir: str = "data/raw/fixtures", season=None):
     """Match fact table, one row per fixture."""
 
     rows = []
 
-    for file in _raw_fixture_files(raw_dir):
+    for file in _raw_fixture_files(raw_dir, season=season):
         data = load_json(str(file))
 
         for item in data.get("response", []):
@@ -164,10 +183,12 @@ def transform_fixtures(raw_dir: str = "data/raw/fixtures"):
     return df.drop_duplicates(subset=["FixtureID"]).reset_index(drop=True)
 
 
-def transform_fixture_team_results(raw_dir: str = "data/raw/fixtures"):
+def transform_fixture_team_results(
+    raw_dir: str = "data/raw/fixtures", season=None
+):
     """One row per team in each fixture, useful for standings-like analysis."""
 
-    fixtures = transform_fixtures(raw_dir)
+    fixtures = transform_fixtures(raw_dir, season=season)
     rows = []
 
     for item in fixtures.to_dict("records"):
@@ -223,8 +244,8 @@ def transform_fixture_team_results(raw_dir: str = "data/raw/fixtures"):
     return pd.DataFrame(rows)
 
 
-def transform_dates(raw_dir: str = "data/raw/fixtures"):
-    fixtures = transform_fixtures(raw_dir)
+def transform_dates(raw_dir: str = "data/raw/fixtures", season=None):
+    fixtures = transform_fixtures(raw_dir, season=season)
 
     if fixtures.empty:
         return pd.DataFrame()

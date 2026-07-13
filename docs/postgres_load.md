@@ -73,6 +73,10 @@ PYTHONPATH=src ./venv/Scripts/python.exe -m football_analytics.load.warehouse
 O script recria somente o schema `warehouse`. O schema `stage` permanece como
 fonte intermediária.
 
+Esse é o caminho de reconstrução completa. Para a rotina de uma temporada em
+andamento, consulte `docs/incremental_pipeline.md`. A carga incremental não
+remove os dados das demais temporadas.
+
 # Schema antigo analytics
 
 Se você já carregou dados no schema `analytics`, pode manter por enquanto.

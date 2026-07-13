@@ -3,10 +3,38 @@ from pathlib import Path
 import pandas as pd
 
 from football_analytics.utils.helpers import load_json
+from football_analytics.utils.raw_snapshots import complete_snapshots
 
 
-def _raw_player_files(raw_dir: str = "data/raw/players"):
-    return sorted(Path(raw_dir).glob("*/team_*/page_*.json"))
+def _raw_player_files(raw_dir: str = "data/raw/players", season=None):
+    raw_path = Path(raw_dir)
+
+    if season is not None:
+        for snapshot in reversed(complete_snapshots(raw_path, season)):
+            snapshot_files = sorted(
+                snapshot.glob("players/team_*/page_*.json")
+            )
+            if snapshot_files:
+                return snapshot_files
+        season_path = raw_path / str(season)
+        return sorted(season_path.glob("team_*/page_*.json"))
+
+    seasons = {
+        int(path.name)
+        for path in raw_path.iterdir()
+        if path.is_dir() and path.name.isdigit()
+    }
+    snapshots_root = raw_path.parent / "snapshots"
+    if snapshots_root.exists():
+        seasons.update(
+            int(path.name)
+            for path in snapshots_root.iterdir()
+            if path.is_dir() and path.name.isdigit()
+        )
+    files = []
+    for item in sorted(seasons):
+        files.extend(_raw_player_files(raw_dir, season=item))
+    return files
 
 
 def _stat_value(stat, group, field):
@@ -40,12 +68,14 @@ def _safe_divide(numerator, denominator):
     return numerator / denominator
 
 
-def transform_player_season_stats(raw_dir: str = "data/raw/players"):
+def transform_player_season_stats(
+    raw_dir: str = "data/raw/players", season=None
+):
     """Player/team/season statistics fact table."""
 
     rows = []
 
-    for file in _raw_player_files(raw_dir):
+    for file in _raw_player_files(raw_dir, season=season):
         data = load_json(str(file))
 
         for item in data.get("response", []):
@@ -233,12 +263,12 @@ def transform_player_season_stats(raw_dir: str = "data/raw/players"):
     return df
 
 
-def transform_players(raw_dir: str = "data/raw/players"):
+def transform_players(raw_dir: str = "data/raw/players", season=None):
     """Player dimension, keeping the latest known descriptive values."""
 
     rows = []
 
-    for file in _raw_player_files(raw_dir):
+    for file in _raw_player_files(raw_dir, season=season):
         data = load_json(str(file))
 
         for item in data.get("response", []):
