@@ -3,10 +3,10 @@ import re
 
 from sqlalchemy import text
 
-from football_analytics.load.etl_control import (
-    ensure_etl_control,
+from football_analytics.load.etl import (
+    ensure_etl,
     finish_run,
-    require_active_season,
+    require_mutable_season,
     start_run,
 )
 from football_analytics.load.postgres import _to_snake_case, build_engine
@@ -78,8 +78,8 @@ def refresh_stage_season(season, force=False, work_schema=None):
 
     try:
         with engine.begin() as connection:
-            ensure_etl_control(connection)
-            require_active_season(connection, season, force=force)
+            ensure_etl(connection)
+            require_mutable_season(connection, season, force=force)
             run_id = start_run(connection, season, "stage_incremental")
 
         frames = _prepare_frames(season)

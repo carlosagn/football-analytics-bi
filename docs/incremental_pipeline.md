@@ -1,40 +1,48 @@
 # Pipeline incremental por temporada
 
 O pipeline incremental atualiza apenas a temporada escolhida. A reconstrução
-completa continua disponível para recuperação e mudanças estruturais no modelo.
+completa continua disponível para recuperação e mudanças estruturais.
 
-Para uma lista direta de comandos organizada por situação, consulte
-`docs/execucao.md`.
+Para os comandos organizados por situação, consulte `docs/execucao.md`.
 
-# Estado inicial
+# Controle pelo estado dos dados
 
-As temporadas de 2010 a 2025 são cadastradas automaticamente em
-`etl.season_control` com status `closed`. A temporada 2026 não é cadastrada nem
-consultada automaticamente.
+Não existe uma tabela operacional para ativar ou encerrar temporadas. A fonte
+única dessa informação é `warehouse.dim_season.is_completed`.
 
-Adicionar um ano em `SUPPORTED_SEASONS` significa somente que a extração
-histórica conhece esse ano. Isso não ativa uma temporada para atualizações.
+| Estado em `dim_season` | Comportamento |
+|---|---|
+| temporada ainda não existe | primeira extração e carga permitidas |
+| `is_completed = false` | snapshots e atualizações permitidos |
+| `is_completed = true` | carga normal bloqueada; correção exige `--force` |
 
-# Controle operacional
+Adicionar um ano em `SUPPORTED_SEASONS` não cria dados no banco e não acessa
+a API.
 
-## etl.season_control
+# Como is_completed é calculado
 
-Controla se uma temporada pode ser modificada:
+O campo é derivado dos status das partidas no stage. Uma temporada é
+considerada concluída quando todas as partidas possuem um dos status finais
+aceitos:
 
-- `active`: aceita snapshots e cargas incrementais;
-- `closed`: protegida contra alterações acidentais.
+- `FT`;
+- `AET`;
+- `PEN`;
+- `CANC`.
 
-Registra ainda ativação, encerramento e a última carga bem-sucedida.
+Se existir uma partida agendada, em andamento, adiada ou com outro status não
+final, `is_completed` será `false`.
 
-## etl.load_runs
+# Controle das execuções
 
-Registra separadamente as cargas de stage e warehouse, incluindo início, fim,
-status, contagens e eventual mensagem de erro.
+O schema `etl` permanece apenas para auditoria. `etl.load_runs` registra as
+cargas de stage e warehouse com temporada, início, fim, status, contagens e
+eventual mensagem de erro.
 
 # Raw por snapshot
 
-Temporadas encerradas continuam usando os arquivos históricos existentes. Uma
-temporada ativa utiliza snapshots imutáveis:
+Temporadas históricas continuam usando os arquivos existentes. Novas extrações
+utilizam snapshots imutáveis:
 
 ```text
 data/raw/snapshots/2026/snapshot_20260713T080000Z/
@@ -47,52 +55,38 @@ data/raw/snapshots/2026/snapshot_20260713T080000Z/
 ```
 
 `_SUCCESS.json` é criado somente no fim de uma extração completa. Diretórios
-incompletos são ignorados, e o transform escolhe o snapshot completo mais
-recente. O manifesto registra temporada, horário, requisições e quantidades.
+incompletos são ignorados. O transform escolhe o snapshot completo mais recente
+e, quando necessário, o último snapshot que contenha jogadores.
 
-Se jogadores forem omitidos de um snapshot, o transform continua usando o
-último conjunto completo de jogadores disponível.
+# Primeira importação de uma temporada
 
-# Primeira ativação
-
-Quando houver autorização para iniciar 2026:
-
-```bash
-PYTHONPATH=src ./venv/Scripts/python.exe \
-  -m football_analytics.load.etl_control activate --season 2026
-```
-
-Depois, crie o primeiro snapshot:
+Não é necessário cadastrar ou ativar a temporada. Se ela ainda não existir em
+`dim_season`, o snapshot é permitido:
 
 ```bash
 PYTHONPATH=src ./venv/Scripts/python.exe \
   -m football_analytics.extract.season_snapshot --season 2026
-```
 
-O segundo comando acessa a API. Nenhuma chamada é feita durante as cargas do
-banco descritas abaixo.
-
-# Atualização incremental
-
-Com um snapshot completo disponível:
-
-```bash
 PYTHONPATH=src ./venv/Scripts/python.exe \
   -m football_analytics.pipeline.refresh_season --season 2026
 ```
 
-O orquestrador:
+O primeiro comando acessa a API. O segundo utiliza o raw local.
+
+# Atualização incremental
+
+Enquanto `is_completed = false`, o orquestrador:
 
 1. lê o raw mais recente da temporada;
 2. transforma somente a temporada solicitada;
 3. valida chaves, conteúdo e temporada;
 4. atualiza somente essa fatia no stage;
 5. atualiza dimensões e somente essa fatia no warehouse;
-6. aplica `manual.venue_corrections`;
-7. registra os resultados em `etl.load_runs`.
+6. recalcula `dim_season`, incluindo `is_completed`;
+7. aplica `manual.venue_corrections`;
+8. registra o resultado em `etl.load_runs`.
 
-Stage e warehouse usam transações. Uma falha reverte a etapa afetada e preserva
-o estado anterior dessa camada.
+Stage e warehouse usam transações. Uma falha reverte a etapa afetada.
 
 # Estratégia no stage
 
@@ -121,35 +115,33 @@ a temporada solicitada é substituída em:
 - `fact_player_season`;
 - registro correspondente em `dim_season`.
 
-As tabelas dependentes são removidas antes de `fact_match`, respeitando as
-chaves estrangeiras.
-
 # Encerramento
 
-Ao final da competição, crie um snapshot final e execute:
+`close_season` executa a carga final e confirma que não existem partidas com
+status pendente:
 
 ```bash
 PYTHONPATH=src ./venv/Scripts/python.exe \
   -m football_analytics.pipeline.close_season --season 2026
 ```
 
-O comando faz a carga final, verifica se restam partidas com status não final e
-marca a temporada como `closed`. Depois disso, novas cargas são bloqueadas.
+O comando não marca o campo manualmente. `is_completed` é recalculado pelos
+dados das partidas. Se permanecer `false`, o encerramento falha e informa os
+status pendentes.
 
-# Correção histórica intencional
+# Correção histórica
 
-Uma temporada encerrada somente pode ser reprocessada explicitamente:
+Uma temporada com `is_completed = true` fica protegida. Para reprocessar
+intencionalmente o raw de uma temporada concluída:
 
 ```bash
 PYTHONPATH=src ./venv/Scripts/python.exe \
-  -m football_analytics.pipeline.refresh_season --season 2025 --force
+  -m football_analytics.pipeline.refresh_season \
+  --season 2025 \
+  --force
 ```
 
-`--force` não deve ser usado na rotina normal.
-
 # Reconstrução completa
-
-O caminho anterior permanece disponível:
 
 ```bash
 PYTHONPATH=src ./venv/Scripts/python.exe -m football_analytics.transform.all
@@ -157,22 +149,9 @@ PYTHONPATH=src ./venv/Scripts/python.exe -m football_analytics.load.stage
 PYTHONPATH=src ./venv/Scripts/python.exe -m football_analytics.load.warehouse
 ```
 
-Ele deve ser usado para mudanças estruturais, novas regras para todo o histórico
-ou recuperação. A rotina de uma temporada ativa deve usar o incremental.
+Esse caminho recalcula `dim_season.is_completed` para todas as temporadas.
 
 # CSVs
 
 Os CSVs permanecem na reconstrução completa e na inspeção manual. A carga
-incremental transforma os JSONs diretamente em DataFrames e atualiza o banco,
-sem sobrescrever os CSVs históricos.
-
-# Validações realizadas
-
-O fluxo foi exercitado com 2025, sem chamadas à API e com `--force`:
-
-- 380 partidas;
-- 760 resultados por equipe;
-- 915 estatísticas jogador-temporada;
-- totais históricos preservados em 6.030, 12.060 e 15.128 linhas;
-- correções manuais de estádios preservadas;
-- reconstrução completa validada depois do teste incremental.
+incremental transforma os JSONs diretamente em DataFrames e atualiza o banco.

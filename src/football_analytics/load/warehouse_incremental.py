@@ -2,10 +2,10 @@ import argparse
 
 from sqlalchemy import text
 
-from football_analytics.load.etl_control import (
-    ensure_etl_control,
+from football_analytics.load.etl import (
+    ensure_etl,
     finish_run,
-    require_active_season,
+    require_mutable_season,
     start_run,
 )
 from football_analytics.load.postgres import build_engine
@@ -396,8 +396,8 @@ def refresh_warehouse_season(season, force=False):
 
     try:
         with engine.begin() as connection:
-            ensure_etl_control(connection)
-            require_active_season(connection, season, force=force)
+            ensure_etl(connection)
+            require_mutable_season(connection, season, force=force)
             run_id = start_run(connection, season, "warehouse_incremental")
 
         with engine.begin() as connection:
@@ -409,17 +409,6 @@ def refresh_warehouse_season(season, force=False):
                 connection.execute(text(statement), {"season": season})
             for statement in INSERT_SEASON_SQL:
                 connection.execute(text(statement), {"season": season})
-
-            connection.execute(
-                text(
-                    """
-                    UPDATE etl.season_control
-                    SET last_successful_run_at = CURRENT_TIMESTAMP
-                    WHERE season = :season
-                    """
-                ),
-                {"season": season},
-            )
 
         finish_run(engine, run_id, "success", row_counts=counts)
         print(f"Warehouse atualizado somente para a temporada {season}.")

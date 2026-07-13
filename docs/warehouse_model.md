@@ -43,6 +43,9 @@ warehouse.dim_season
 Uma linha por edição do Brasileirão. Centraliza o período da competição,
 quantidade de clubes e partidas e indica se a temporada foi concluída.
 
+`is_completed` é a fonte única para controlar a mutabilidade da temporada. O
+valor é calculado pelos status das partidas e não deve ser editado manualmente.
+
 Chave principal:
 
 season_key (o próprio ano da temporada)

@@ -6,9 +6,9 @@ from pathlib import Path
 from football_analytics.config.constants import LEAGUE_SERIE_A
 from football_analytics.extract.api_client import ApiFootballClient
 from football_analytics.extract.players import _validate_players_page
-from football_analytics.load.etl_control import (
-    ensure_etl_control,
-    require_active_season,
+from football_analytics.load.etl import (
+    ensure_etl,
+    require_mutable_season,
 )
 from football_analytics.load.postgres import build_engine
 from football_analytics.utils.helpers import save_json
@@ -26,11 +26,12 @@ def extract_season_snapshot(
     league_id=LEAGUE_SERIE_A,
     include_players=True,
     request_interval_seconds=7,
+    force=False,
 ):
     engine = build_engine()
     with engine.begin() as connection:
-        ensure_etl_control(connection)
-        require_active_season(connection, season)
+        ensure_etl(connection)
+        require_mutable_season(connection, season, force=force)
 
     timestamp = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
     snapshot_dir = Path(
@@ -116,6 +117,7 @@ if __name__ == "__main__":
     parser.add_argument("--league", type=int, default=LEAGUE_SERIE_A)
     parser.add_argument("--interval", type=float, default=7)
     parser.add_argument("--skip-players", action="store_true")
+    parser.add_argument("--force", action="store_true")
     args = parser.parse_args()
 
     extract_season_snapshot(
@@ -123,4 +125,5 @@ if __name__ == "__main__":
         league_id=args.league,
         include_players=not args.skip_players,
         request_interval_seconds=args.interval,
+        force=args.force,
     )

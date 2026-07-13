@@ -1,35 +1,22 @@
 # Guia direto de execução
 
-Os comandos abaixo foram escritos para o Git Bash, executados na raiz do
-projeto com o ambiente virtual configurado.
+Os comandos foram escritos para o Git Bash, executados na raiz do projeto com
+o ambiente virtual configurado.
 
 # 1. Reconstruir 2010–2025 usando os JSONs existentes
-
-Use quando os arquivos raw já estiverem salvos e quiser recriar CSVs, stage e
-warehouse.
 
 Este procedimento não acessa a API.
 
 ```bash
 PYTHONPATH=src ./venv/Scripts/python.exe -m football_analytics.transform.all
-
 PYTHONPATH=src ./venv/Scripts/python.exe -m football_analytics.load.stage
-
 PYTHONPATH=src ./venv/Scripts/python.exe -m football_analytics.load.warehouse
 ```
 
-Resultado:
-
-- recria os CSVs em `data/stage`;
-- substitui todo o schema `stage`;
-- reconstrói todo o schema `warehouse`;
-- reaplica `manual.venue_corrections`;
-- preserva os schemas `manual` e `etl`.
+Ele recria os CSVs, substitui o stage, reconstrói o warehouse e reaplica
+`manual.venue_corrections`.
 
 # 2. Buscar 2010–2025 na API e fazer a carga completa
-
-Use somente se os JSONs ainda não existirem ou se estiver completando uma
-extração histórica interrompida.
 
 O primeiro comando acessa a API. Arquivos históricos existentes são
 reutilizados.
@@ -41,7 +28,7 @@ PYTHONPATH=src ./venv/Scripts/python.exe \
   --end-season 2025
 ```
 
-Depois da extração:
+Depois:
 
 ```bash
 PYTHONPATH=src ./venv/Scripts/python.exe -m football_analytics.transform.all
@@ -53,16 +40,10 @@ PYTHONPATH=src ./venv/Scripts/python.exe -m football_analytics.load.warehouse
 
 Exemplo: importar 2026 enquanto o campeonato ainda está acontecendo.
 
-## 3.1 Ativar a temporada
+Não existe etapa de ativação. Como 2026 ainda não existe em `dim_season`, a
+primeira importação é permitida automaticamente.
 
-Este comando não acessa a API.
-
-```bash
-PYTHONPATH=src ./venv/Scripts/python.exe \
-  -m football_analytics.load.etl_control activate --season 2026
-```
-
-## 3.2 Criar o primeiro snapshot completo
+## 3.1 Criar o primeiro snapshot completo
 
 Este comando acessa a API. O primeiro snapshot deve incluir jogadores.
 
@@ -71,7 +52,7 @@ PYTHONPATH=src ./venv/Scripts/python.exe \
   -m football_analytics.extract.season_snapshot --season 2026
 ```
 
-## 3.3 Atualizar somente essa temporada no banco
+## 3.2 Atualizar somente 2026 no banco
 
 Este comando não acessa a API.
 
@@ -80,17 +61,12 @@ PYTHONPATH=src ./venv/Scripts/python.exe \
   -m football_analytics.pipeline.refresh_season --season 2026
 ```
 
-Resultado:
+Se houver partidas não finalizadas, `warehouse.dim_season.is_completed` ficará
+como `false`, permitindo novas atualizações.
 
-- temporadas anteriores permanecem intactas;
-- somente 2026 é substituída no stage e no warehouse;
-- 2026 permanece com status `active`.
+# 4. Atualizar uma temporada incompleta
 
-# 4. Atualizar uma temporada que continua em andamento
-
-## Atualização completa, incluindo jogadores
-
-O primeiro comando acessa a API. O segundo não.
+Enquanto `dim_season.is_completed = false`, use:
 
 ```bash
 PYTHONPATH=src ./venv/Scripts/python.exe \
@@ -100,11 +76,12 @@ PYTHONPATH=src ./venv/Scripts/python.exe \
   -m football_analytics.pipeline.refresh_season --season 2026
 ```
 
-## Atualização sem buscar novamente os jogadores
+O primeiro comando acessa a API. O segundo atualiza somente 2026 no stage e no
+warehouse.
+
+## Atualizar sem buscar novamente os jogadores
 
 Use apenas quando já existir um snapshot anterior completo com jogadores.
-O extrator buscará times e partidas e o transform reutilizará o conjunto mais
-recente disponível de jogadores.
 
 ```bash
 PYTHONPATH=src ./venv/Scripts/python.exe \
@@ -118,16 +95,11 @@ PYTHONPATH=src ./venv/Scripts/python.exe \
 
 # 5. Importar uma temporada já encerrada que nunca foi carregada
 
-Exemplo: no início de 2027, importar todos os dados finais de 2026.
+Exemplo: no início de 2027, importar os dados finais de 2026.
 
-## 5.1 Ativar temporariamente
+Como a temporada ainda não existe em `dim_season`, não é necessário ativá-la.
 
-```bash
-PYTHONPATH=src ./venv/Scripts/python.exe \
-  -m football_analytics.load.etl_control activate --season 2026
-```
-
-## 5.2 Criar o snapshot final completo
+## 5.1 Criar o snapshot final
 
 Este comando acessa a API.
 
@@ -136,39 +108,36 @@ PYTHONPATH=src ./venv/Scripts/python.exe \
   -m football_analytics.extract.season_snapshot --season 2026
 ```
 
-## 5.3 Carregar e encerrar
-
-Não é necessário executar `refresh_season` antes. O fechamento já faz a carga
-de stage e warehouse.
+## 5.2 Carregar e validar o encerramento
 
 ```bash
 PYTHONPATH=src ./venv/Scripts/python.exe \
   -m football_analytics.pipeline.close_season --season 2026
 ```
 
-O comando verifica se ainda existem partidas não finalizadas. Se existirem, a
-temporada não será marcada como `closed`.
+O comando atualiza stage e warehouse, verifica os status das partidas e
+confirma que `dim_season.is_completed = true`. Se houver partidas pendentes, o
+campo permanecerá `false` e o encerramento informará o problema.
 
-# 6. Encerrar uma temporada que estava sendo atualizada
+# 6. Encerrar uma temporada que vinha sendo atualizada
 
-Primeiro, crie o último snapshot completo:
+Crie o último snapshot completo e execute o fechamento:
 
 ```bash
 PYTHONPATH=src ./venv/Scripts/python.exe \
   -m football_analytics.extract.season_snapshot --season 2026
-```
 
-Depois, faça a carga final e encerre:
-
-```bash
 PYTHONPATH=src ./venv/Scripts/python.exe \
   -m football_analytics.pipeline.close_season --season 2026
 ```
 
-# 7. Reprocessar uma temporada encerrada sem acessar a API
+`is_completed` não é preenchido manualmente. Ele é recalculado a partir dos
+status das partidas.
 
-Use somente para uma correção histórica intencional quando o raw correto já
-estiver salvo.
+# 7. Reprocessar uma temporada concluída
+
+Uma carga normal é bloqueada quando `dim_season.is_completed = true`. Para uma
+correção histórica intencional usando o raw existente:
 
 ```bash
 PYTHONPATH=src ./venv/Scripts/python.exe \
@@ -177,13 +146,32 @@ PYTHONPATH=src ./venv/Scripts/python.exe \
   --force
 ```
 
-`--force` ignora a proteção `closed`, mas não acessa a API.
+Esse comando não acessa a API.
 
-# 8. Consultar o status das temporadas
+Se também for necessário consultar novamente a API para uma temporada já
+concluída, o snapshot exige a mesma intenção explícita:
 
 ```bash
 PYTHONPATH=src ./venv/Scripts/python.exe \
-  -m football_analytics.load.etl_control list
+  -m football_analytics.extract.season_snapshot \
+  --season 2025 \
+  --force
+```
+
+# 8. Consultar o estado das temporadas
+
+Execute no PostgreSQL:
+
+```sql
+SELECT
+    season_key,
+    season_name,
+    start_date,
+    end_date,
+    number_of_matches,
+    is_completed
+FROM warehouse.dim_season
+ORDER BY season_key;
 ```
 
 # Resumo rápido
@@ -192,19 +180,16 @@ PYTHONPATH=src ./venv/Scripts/python.exe \
 |---|---|
 | Recriar todo o banco usando raw existente | `transform.all` → `load.stage` → `load.warehouse` |
 | Buscar e carregar 2010–2025 | `extract.historical` → reconstrução completa |
-| Primeira carga de temporada ativa | `activate` → `season_snapshot` → `refresh_season` |
-| Atualizar temporada ativa | `season_snapshot` → `refresh_season` |
-| Importar temporada já encerrada | `activate` → `season_snapshot` → `close_season` |
-| Encerrar temporada ativa | snapshot final → `close_season` |
-| Corrigir temporada fechada usando raw existente | `refresh_season --force` |
+| Primeira carga de temporada incompleta | `season_snapshot` → `refresh_season` |
+| Atualizar temporada incompleta | `season_snapshot` → `refresh_season` |
+| Importar temporada já encerrada | `season_snapshot` → `close_season` |
+| Encerrar temporada em andamento | snapshot final → `close_season` |
+| Corrigir temporada concluída | `refresh_season --force` |
 
-# Regra para identificar acesso à API
+# Quais comandos acessam a API
 
-Somente os módulos dentro de `football_analytics.extract` acessam a API:
-
-- `extract.historical`;
-- `extract.season_snapshot`;
-- extratores individuais de times, partidas e jogadores.
+Somente os módulos dentro de `football_analytics.extract` acessam a API, como
+`extract.historical` e `extract.season_snapshot`.
 
 Comandos de `transform`, `load` e `pipeline` utilizam dados locais e o
 PostgreSQL. Eles não consomem requisições da API.

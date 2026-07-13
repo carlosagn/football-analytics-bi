@@ -2,7 +2,6 @@ import argparse
 
 from sqlalchemy import text
 
-from football_analytics.load.etl_control import set_season_status
 from football_analytics.load.postgres import build_engine
 from football_analytics.pipeline.refresh_season import refresh_season
 
@@ -11,7 +10,7 @@ FINAL_STATUSES = {"FT", "AET", "PEN", "CANC"}
 
 
 def close_season(season):
-    refresh_season(season)
+    refresh_season(season, force=True)
 
     engine = build_engine()
     with engine.connect() as connection:
@@ -35,8 +34,9 @@ def close_season(season):
             f"{[tuple(row) for row in pending]}"
         )
 
-    set_season_status(season, "closed")
-    print(f"Temporada {season} finalizada e protegida contra novas cargas.")
+    print(
+        f"Temporada {season} validada como concluída em dim_season."
+    )
 
 
 if __name__ == "__main__":
