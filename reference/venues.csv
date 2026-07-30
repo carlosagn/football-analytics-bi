@@ -1,0 +1,25 @@
+venue_name;api_venue_id;venue_address;venue_city;venue_capacity;venue_image_url;review_status
+Arena Barueri;255;Av. Pref. João Vila-Lobos Quero 1001, Jardim Belval;Barueri, São Paulo;38000;;approved
+Arena BRB Mané Garrincha;20813;Eixo Monumental, Asa Norte;Brasília, Distrito Federal;72788;;approved
+Arena Independência;206;Avenida Ismênia Tunes, Bairro Horto;Belo Horizonte, Minas Gerais;23018;https://media.api-sports.io/football/venues/206.png;approved
+Arena Pantanal;235;Av. Agrícola Paes de Barros;Cuiabá, Mato Grosso;44003;https://media.api-sports.io/football/venues/235.png;approved
+Arena Pernambuco;253;BR 408, São Lourenço da Mata;Recife, Pernambuco;46154;https://media.api-sports.io/football/venues/253.png;approved
+Beira-Rio;244;Avenida Padre Cacique 891, Bairro Menino Deus;Porto Alegre, Rio Grande do Sul;50128;https://media.api-sports.io/football/venues/244.png;approved
+Estádio Adelmar da Costa Carvalho;276;Rua Sport Club do Recife, Ilha do Retiro;Recife, Pernambuco;35020;;approved
+Estádio Alberto Oliveira;238;Rua Vasco da Gama, Cruzeiro;Feira de Santana, Bahia;16274;;approved
+Estádio Cláudio Moacir de Azevedo;5651;Avenida Luiz Lírio, Barra de Macaé;Macaé, Rio de Janeiro;15000;;approved
+Estádio do Pacaembu;8604;Praça Charles Miller, Pacaembu;São Paulo, São Paulo;40199;;approved
+Estádio do Vale;254;Rua Santa Teresa 420, Liberdade;Novo Hamburgo, Rio Grande do Sul;5196;;approved
+Estádio Francisco Stédile;5625;Rua Thomas Beltrão de Queiróz 898, Marechal Floriano;Caxias do Sul, Rio Grande do Sul;22132;;approved
+Estádio Governador Roberto Santos;11287;Av. Prof. Pinto de Aguiar, Pituaçu;Salvador de Bahia, Bahia;32157;;approved
+Estádio José do Rego Maciel;7803;Avenida Beberibe 1285, Bairro Arruda;Recife, Pernambuco;60044;https://media.api-sports.io/football/venues/7803.png;approved
+Estádio Kleber José de Andrade;20691;R. Rio Branco, Rio Branco;Cariacica, Espírito Santo;21000;;approved
+Estádio Luso-Brasileiro;5665;Rua Haroldo Lobo 400, Ilha do Governador;Rio de Janeiro, Rio de Janeiro;14000;;approved
+Estádio Municipal General Raulino de Oliveira;5650;R. Quinhentos E Quarenta e Cinco, Jardim Paraíba;Volta Redonda, Rio de Janeiro;18230;;approved
+Estádio Municipal João Havelange;278;Av. José Roberto Migliorini, Santa Mônica;Uberlândia, Minas Gerais;53350;;approved
+Estádio Municipal Presidente Getúlio Vargas;237;Rua Marechal Deodoro da Fonseca 1187, Benfica;Fortaleza, Ceará;20268;;approved
+Estádio Olímpico Pedro Ludovico Teixeira;7311;R. 74 41, St. Central;Goiânia, Goiás;13500;;approved
+Maracanã;204;Rua Professor Eurico Rabelo, Maracanã;Rio de Janeiro, Rio de Janeiro;78838;https://media.api-sports.io/football/venues/204.png;approved
+Mineirão;234;Avenida Antonio Abrahão Carã 1001, Pampulhas;Belo Horizonte, Minas Gerais;62170;https://media.api-sports.io/football/venues/234.png;approved
+Morumbi;269;Praca Roberto Gomes Pedrosa 1, Morumbi;São Paulo, São Paulo;66795;https://media.api-sports.io/football/venues/269.png;approved
+São Januário;19377;Rua Gal Almério de Moura 131, Bairro Vasco da Gama;Rio de Janeiro, Rio de Janeiro;24584;https://media.api-sports.io/football/venues/19377.png;approved

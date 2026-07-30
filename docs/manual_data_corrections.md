@@ -1,55 +1,63 @@
-# Correções manuais de dados
+# Curadoria de estádios
 
-Este documento registra informações complementadas ou corrigidas manualmente
-quando os dados disponibilizados pela API estão ausentes, desatualizados ou
-duplicados.
+O projeto trata nomes ausentes, desatualizados ou inconsistentes sem alterar os
+JSONs originais e sem colocar regras de limpeza dentro do Power BI.
 
-# Regras
+## Fontes versionadas
 
-- O JSON da camada raw nunca deve ser alterado.
-- O stage deve continuar representando o resultado do processo de transformação.
-- Toda correção deve registrar o objeto afetado, o motivo e a alteração feita.
-- Endereços e capacidades informados manualmente devem ser conferidos em uma
-  fonte confiável antes do uso analítico.
-- As correções permanentes devem ser registradas em
-  `manual.venue_corrections`, nunca diretamente no warehouse.
+As decisões permanentes ficam em dois arquivos do repositório:
 
-# Correções conhecidas
+- `reference/venues.csv`: atributos canônicos e complementações manuais;
+- `reference/venue_aliases.csv`: nome bruto da API, nome canônico, estado da
+  revisão e motivo do agrupamento.
 
-## Estádio duplicado
+Esses arquivos tornam a curadoria reproduzível em outro PostgreSQL. Novas
+correções não devem ser feitas diretamente em `warehouse.dim_venue`.
 
-- Tabela: `warehouse.dim_venue`
-- Identificador duplicado: `venue_id = 279`
-- Identificador canônico: `venue_id = 19377`
-- Ação: direcionar as referências de `279` para `19377` e excluir o registro
-  duplicado.
+## Estruturas no PostgreSQL
 
-# Migração dos ajustes existentes
+Durante a carga, os arquivos são aplicados em:
 
-Os ajustes que haviam sido feitos em `warehouse.dim_venue` foram migrados para
-a tabela persistente com o comando:
+- `manual.venue_registry`: cadastro persistente com uma `venue_key` por estádio;
+- `manual.venue_name_alias`: associação dos nomes brutos às chaves canônicas;
+- `manual.venue_alias_review`: visão de qualidade com partidas, temporadas,
+  cidades, IDs da API e estado da revisão.
 
-```bash
-PYTHONPATH=src ./venv/Scripts/python.exe \
-  -m football_analytics.load.manual_corrections
+`manual.venue_corrections` permanece apenas como compatibilidade com os ajustes
+feitos antes da criação dos arquivos de referência.
+
+## Regras
+
+- `stage.venue_id` e `stage.venue_name` preservam os valores da API.
+- `warehouse.fact_match.venue_name` preserva o nome bruto da partida.
+- Os relacionamentos usam somente `venue_key`.
+- `api_venue_id` é uma referência auxiliar e nunca é usado isoladamente para
+  decidir que dois nomes representam o mesmo estádio.
+- Um alias novo recebe `review_status = pending` e continua disponível no
+  warehouse para não causar perda de partidas.
+- A carga exibe um aviso enquanto existirem aliases pendentes.
+
+## Revisar nomes novos
+
+```sql
+SELECT *
+FROM manual.venue_alias_review
+WHERE review_status = 'pending'
+ORDER BY number_of_matches DESC, venue_name_raw;
 ```
 
-Esse comando serve para capturar ajustes antigos feitos diretamente na dimensão.
-Novas correções devem ser inseridas ou atualizadas diretamente na tabela
-`manual.venue_corrections`.
+Depois da análise, registre a decisão em `reference/venue_aliases.csv`. Caso
+seja necessário complementar endereço, cidade, capacidade, imagem ou ID de
+referência, atualize também `reference/venues.csv`.
 
-# Armazenamento persistente
+Em seguida, reconstrua o warehouse ou reprocesse a temporada afetada. O pipeline
+atualizará as chaves das fatos automaticamente.
 
-A tabela `manual.venue_corrections` fica fora do schema recriado e é aplicada
-automaticamente durante a construção do warehouse. Ela armazena:
+## Estado atual
 
-- identificador original e identificador canônico;
-- endereço corrigido;
-- capacidade corrigida;
-- fonte da informação;
-- data da verificação;
-- observação.
+A curadoria de 2010 a 2025 consolidou 194 nomes brutos em 79 estádios
+canônicos. Todos os aliases atuais estão aprovados, as 6.080 partidas foram
+preservadas e as 17 complementações manuais anteriores continuam aplicadas.
 
-Atualmente existem 17 estádios com atributos complementados manualmente e um
-mapeamento de duplicidade. A unificação `279 -> 19377` é aplicada tanto na
-dimensão quanto nas tabelas que referenciam o estádio.
+As decisões históricas e as validações estão detalhadas em
+`docs/venue_curation.md`.

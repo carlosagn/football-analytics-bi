@@ -1,104 +1,85 @@
 # Modelo warehouse
 
-O warehouse é a camada final para consumo analítico e Power BI.
+O schema `warehouse` é a camada final para consumo analítico e Power BI. Ele é
+construído a partir do schema `stage`.
 
-Ele é construído a partir do schema `stage`.
+## Dimensões
 
-# Dimensões
+### `warehouse.dim_date`
 
-warehouse.dim_date
+Calendário para filtros temporais. Chave principal: `date_key`.
 
-Calendário para filtros temporais.
+### `warehouse.dim_team`
 
-Chave principal:
+Dimensão de clubes. Chave principal: `team_id`.
 
-date_key
+### `warehouse.dim_venue`
 
-warehouse.dim_team
+Dimensão curada de estádios. Chave principal: `venue_key`.
 
-Dimensão de clubes.
+`venue_key` é uma chave interna gerada pelo projeto e usada nos
+relacionamentos. `api_venue_id` permanece como atributo opcional de linhagem,
+pois a API frequentemente não o informa e, em alguns casos, utiliza IDs
+diferentes para o mesmo estádio.
 
-Chave principal:
+O nome exibido nesta dimensão é o nome canônico. As variações são resolvidas
+pelas tabelas `manual.venue_registry` e `manual.venue_name_alias`.
 
-team_id
+`review_status` informa se o cadastro já foi revisado. No histórico atual,
+todos os estádios presentes na dimensão estão como `approved`.
 
-warehouse.dim_venue
+### `warehouse.dim_player`
 
-Dimensão de estádios.
+Dimensão de jogadores. Chave principal: `player_id`.
 
-Chave principal:
+### `warehouse.dim_season`
 
-venue_id
-
-warehouse.dim_player
-
-Dimensão de jogadores.
-
-Chave principal:
-
-player_id
-
-warehouse.dim_season
-
-Uma linha por edição do Brasileirão. Centraliza o período da competição,
-quantidade de clubes e partidas e indica se a temporada foi concluída.
+Uma linha por edição do Brasileirão. Centraliza período, quantidade de clubes e
+partidas e indica se a temporada foi concluída. Chave principal: `season_key`,
+o próprio ano.
 
 `is_completed` é a fonte única para controlar a mutabilidade da temporada. O
 valor é calculado pelos status das partidas e não deve ser editado manualmente.
 
-Chave principal:
+### `warehouse.dim_position`
 
-season_key (o próprio ano da temporada)
+Padroniza posições em `GK`, `DF`, `MF` e `FW`. `Attacker` e `Forward` são
+consolidados em `FW` somente no warehouse. Chave principal: `position_key`.
 
-warehouse.dim_position
+## Ponte
 
-Padroniza as posições em `GK`, `DF`, `MF` e `FW`. Os valores de origem
-`Attacker` e `Forward` são consolidados em `FW` somente no warehouse.
+### `warehouse.bridge_team_season`
 
-Chave principal:
+Relaciona clubes e temporadas e conserva os atributos do clube naquela edição.
+Chave principal: `season_key, team_id`.
 
-position_key
+`venue_key` referencia `dim_venue` e representa o estádio associado ao clube
+na temporada. `venue_name` permanece como valor descritivo recebido na origem.
 
-# Ponte
+## Fatos
 
-warehouse.bridge_team_season
+### `warehouse.fact_match`
 
-Relaciona clubes e temporadas. Ajuda a responder quais times participaram de
-cada edição do Brasileirão.
+Uma linha por partida. Grão: `fixture_id`.
 
-Chave principal:
+`venue_key` referencia o estádio canônico em `dim_venue`. `venue_name` preserva
+o texto bruto informado pela API para aquela partida. O Power BI usa
+`venue_key` nos relacionamentos, enquanto o nome bruto permite auditoria e
+análise de qualidade. O antigo `venue_id` da API não existe mais nesta fato.
 
-season_key, team_id
+### `warehouse.fact_team_match`
 
-# Fatos
+Duas linhas por partida: uma para o mandante e outra para o visitante. Grão:
+`fixture_id, team_id`.
 
-warehouse.fact_match
+### `warehouse.fact_player_season`
 
-Uma linha por partida.
+Uma linha por jogador, clube e temporada. Grão:
+`player_id, team_id, season_key`.
 
-Grão:
+## Curadoria de colunas
 
-fixture_id
-
-warehouse.fact_team_match
-
-Duas linhas por partida: uma para o mandante e uma para o visitante.
-
-Grão:
-
-fixture_id, team_id
-
-warehouse.fact_player_season
-
-Uma linha por jogador, time, liga e temporada.
-
-Grão:
-
-player_id, team_id, season_key
-
-# Curadoria de colunas
-
-O stage continua amplo e fiel aos dados transformados. O warehouse omite
+O stage continua amplo e próximo dos dados transformados. O warehouse omite
 atributos constantes ou voláteis que não agregam valor analítico neste projeto:
 
 - país e indicador de seleção dos clubes;
@@ -111,26 +92,17 @@ atributos constantes ou voláteis que não agregam valor analítico neste projet
 canceladas, adiadas ou em andamento. `elapsed` representa o minuto transcorrido
 informado pela API.
 
-# Comando
+## Construção
 
 Depois de carregar o stage, rode:
 
+```bash
 PYTHONPATH=src ./venv/Scripts/python.exe -m football_analytics.load.warehouse
+```
 
-O script recria somente o schema `warehouse`. Ele não apaga o schema `stage`.
+O script recria somente o schema `warehouse`. Os schemas `stage`, `manual` e
+`etl` são preservados. O cadastro de estádios e seus aliases é atualizado
+automaticamente antes da construção das tabelas analíticas.
 
-# Dados preenchidos manualmente
-
-Alguns atributos que não são fornecidos, estão incompletos ou apresentam
-duplicidade na API podem ser corrigidos manualmente, como endereço e capacidade
-de estádios.
-
-As correções conhecidas e o procedimento adotado são registrados em
-`docs/manual_data_corrections.md`.
-
-As correções persistentes ficam em `manual.venue_corrections`. O schema `manual`
-não é removido durante a construção, e suas informações são aplicadas
-automaticamente em `dim_venue`, `bridge_team_season` e `fact_match`.
-
-Não devem ser feitas novas edições diretamente em `warehouse.dim_venue`, pois
-o schema `warehouse` continua sendo recriado a cada carga.
+Consulte `docs/manual_data_corrections.md` para o procedimento de curadoria de
+estádios.

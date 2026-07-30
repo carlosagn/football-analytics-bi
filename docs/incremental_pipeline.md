@@ -83,7 +83,7 @@ Enquanto `is_completed = false`, o orquestrador:
 4. atualiza somente essa fatia no stage;
 5. atualiza dimensões e somente essa fatia no warehouse;
 6. recalcula `dim_season`, incluindo `is_completed`;
-7. aplica `manual.venue_corrections`;
+7. atualiza o cadastro persistente de estádios e aplica os aliases de nomes;
 8. registra o resultado em `etl.load_runs`.
 
 Stage e warehouse usam transações. Uma falha reverte a etapa afetada.
@@ -114,6 +114,14 @@ a temporada solicitada é substituída em:
 - `fact_team_match`;
 - `fact_player_season`;
 - registro correspondente em `dim_season`.
+
+O cadastro `manual.venue_registry` também recebe nomes novos encontrados na
+temporada. `manual.venue_name_alias` resolve esses nomes para a `venue_key`
+utilizada em `dim_venue`, `bridge_team_season` e `fact_match`.
+
+Um nome ainda não existente nos arquivos de `reference` é carregado como
+`pending`, sem perda de partidas. A execução exibe um aviso e o caso fica
+disponível em `manual.venue_alias_review` até que a decisão seja versionada.
 
 # Encerramento
 
@@ -150,6 +158,14 @@ PYTHONPATH=src ./venv/Scripts/python.exe -m football_analytics.load.warehouse
 ```
 
 Esse caminho recalcula `dim_season.is_completed` para todas as temporadas.
+
+# Correções históricas versionadas
+
+Durante a transformação de 2010 ou 2013, as correções em
+`reference/fixture_round_corrections.csv` e
+`reference/missing_fixtures_review.csv` são reaplicadas automaticamente. A
+carga incremental e a reconstrução completa produzem, portanto, o mesmo
+resultado sem modificar os JSONs raw.
 
 # CSVs
 

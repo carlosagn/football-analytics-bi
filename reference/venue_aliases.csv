@@ -1,0 +1,150 @@
+venue_name_raw;venue_name_canonical;review_status;match_reason
+Allianz Parque (São Paulo, São Paulo);Allianz Parque;approved;city_suffix
+Arena Barueri (Barueri, São Paulo);Arena Barueri;approved;city_suffix
+Estádio Nacional de Brasília;Arena BRB Mané Garrincha;approved;known_name
+Estádio Nacional de Brasília (Brasília, Distrito Federal);Arena BRB Mané Garrincha;approved;known_name
+Estadio Nacional Mane Garrincha;Arena BRB Mané Garrincha;approved;normalized_name
+Arena Condá (Chapecó, Santa Catarina);Arena Condá;approved;city_suffix
+Estádio Regional Índio Condá (Chapecó, Santa Catarina);Arena Condá;approved;known_name
+Arena Corinthians;Neo Química Arena;approved;former_name
+Arena Corinthians (São Paulo, São Paulo);Neo Química Arena;approved;former_name
+Neo Quimica Arena;Neo Química Arena;approved;normalized_name
+Estádio Joaquim Américo Guimarães (Curitiba, Paraná);Arena da Baixada;approved;official_name
+Ligga Arena;Arena da Baixada;approved;sponsored_name
+Arena De Pernambuco;Arena Pernambuco;approved;normalized_name
+Itaipava Arena Pernambuco;Arena Pernambuco;approved;sponsored_name
+Itaipava Arena Pernambuco (Recife, Pernambuco);Arena Pernambuco;approved;sponsored_name
+Arena do Gremio;Arena do Grêmio;approved;normalized_name
+Arena do Grêmio (Porto Alegre, Rio Grande do Sul);Arena do Grêmio;approved;city_suffix
+Estádio Joaquim Henrique Nogueira;Arena do Jacaré;approved;official_name
+Estádio Joaquim Henrique Nogueira (Sete Lagoas, Minas Gerais);Arena do Jacaré;approved;official_name
+Arena Fonte Nova (Salvador, Bahia);Arena Fonte Nova;approved;city_suffix
+Itaipava Arena Fonte Nova;Arena Fonte Nova;approved;sponsored_name
+Itaipava Arena Fonte Nova (Salvador, Bahia);Arena Fonte Nova;approved;sponsored_name
+Estádio Raimundo Sampaio;Arena Independência;approved;official_name
+Estádio Raimundo Sampaio (Belo Horizonte, Minas Gerais);Arena Independência;approved;official_name
+Arena Pantanal (Cuiabá, Mato Grosso);Arena Pantanal;approved;city_suffix
+Barradao;Estádio Manoel Barradas;approved;nickname
+Estadio Manoel Barradas;Estádio Manoel Barradas;approved;normalized_name
+Estádio Manoel Barradas (Salvador, Bahia);Estádio Manoel Barradas;approved;city_suffix
+Estadio Beira-Rio;Beira-Rio;approved;normalized_name
+Estádio Beira-Rio;Beira-Rio;approved;known_name
+Estádio Beira Rio;Beira-Rio;approved;normalized_name
+Estádio José Pinheiro Borba (Beira-Rio) (Porto Alegre, Rio Grande do Sul);Beira-Rio;approved;official_name
+Estádio José Pinheiro Borda;Beira-Rio;approved;official_name
+Estádio José Pinheiro Borda (Porto Alegre, Rio Grande do Sul);Beira-Rio;approved;official_name
+Durival Britto e Silva;Estádio Durival de Britto e Silva;approved;normalized_name
+Estádio Durival de Brito e Silva;Estádio Durival de Britto e Silva;approved;normalized_name
+Estádio Durival de Brito e Silva (Curitiba, Paraná);Estádio Durival de Britto e Silva;approved;normalized_name
+Estádio Durival de Britto e Silva;Estádio Durival de Britto e Silva;approved;canonical
+Estadio Adelmar da Costa Carvalho;Estádio Adelmar da Costa Carvalho;approved;normalized_name
+Estádio Adelmar da Costa Carvalho (Recife, Pernambuco);Estádio Adelmar da Costa Carvalho;approved;city_suffix
+Ilha do Retiro;Estádio Adelmar da Costa Carvalho;approved;nickname
+Estádio Aderbal Ramos da Silva (Florianópolis, Santa Catarina);Estádio Aderbal Ramos da Silva;approved;city_suffix
+Estádio da Ressacada;Estádio Aderbal Ramos da Silva;approved;nickname
+Estádio Alberto Oliveira (Feira de Santana, Bahia);Estádio Alberto Oliveira;approved;city_suffix
+Estadio Joia da Princesa;Estádio Alberto Oliveira;approved;nickname
+Estadio Alfredo Jaconi;Estádio Alfredo Jaconi;approved;normalized_name
+Estádio Alfredo Jaconi (Caxias do Sul, Rio Grande do Sul);Estádio Alfredo Jaconi;approved;city_suffix
+Estádio Benedito Teixeira (São José do Rio Preto, São Paulo);Estádio Benedito Teixeira;approved;city_suffix
+Estádio Brinco de Ouro da Princesa (Campinas, São Paulo);Estádio Brinco de Ouro da Princesa;approved;city_suffix
+Estadio Castelão;Estádio Governador Plácido Aderaldo Castelo;approved;nickname
+Estádio Governador Plácido Aderaldo Castelo (Fortaleza, Ceará);Estádio Governador Plácido Aderaldo Castelo;approved;city_suffix
+Estádio Governador Plácido Castelo;Estádio Governador Plácido Aderaldo Castelo;approved;short_name
+Estádio Cicero de Souza Marques;Estádio Cícero de Souza Marques;approved;normalized_name
+Estádio Cícero Pompeu de Toledo;Morumbi;approved;official_name
+Estádio Cícero Pompeu de Toledo (Morumbi);Morumbi;approved;official_name
+Estádio Cícero Pompeu de Toledo (Morumbi) (São Paulo, São Paulo);Morumbi;approved;official_name
+Estadio Do MorumBIS;Morumbi;approved;sponsored_name
+Morumbí;Morumbi;approved;normalized_name
+MorumBIS;Morumbi;approved;sponsored_name
+Estádio Claúdio Moacir de Azevedo;Estádio Cláudio Moacir de Azevedo;approved;spelling_correction
+Estádio Claúdio Moacir de Azevedo (Macaé, Rio de Janeiro);Estádio Cláudio Moacir de Azevedo;approved;spelling_correction
+Estádio Club de Regatas Vasco da Gama;São Januário;approved;official_name
+Estádio Club de Regatas Vasco da Gama (Rio de Janeiro, Rio de Janeiro);São Januário;approved;official_name
+Estádio São Januário;São Januário;approved;known_name
+Estádio Couto Pereira;Estádio Major Antônio Couto Pereira;approved;short_name
+Estádio Major Antônio Couto Pereira (Curitiba, Paraná);Estádio Major Antônio Couto Pereira;approved;city_suffix
+Estadio de Pituacu;Estádio Governador Roberto Santos;approved;nickname
+Estádio Governador Roberto Santos (Salvador de Bahia, Bahia);Estádio Governador Roberto Santos;approved;city_suffix
+Estádio do Arruda;Estádio José do Rego Maciel;approved;nickname
+Estádio Jóse do Rego Maciel;Estádio José do Rego Maciel;approved;spelling_correction
+Estádio do Governo do Estado de Goiás;Estádio Serra Dourada;approved;official_name
+Estádio do Governo do Estado de Goiás (Serra Dourada) (Goiânia, Goiás);Estádio Serra Dourada;approved;official_name
+Serra Dourada;Estádio Serra Dourada;approved;known_name
+Estadio do Maracanã;Maracanã;approved;normalized_name
+Estádio do Maracanã;Maracanã;approved;known_name
+Estadio Jornalista Mário Filho;Maracanã;approved;official_name
+Estadio Jornalista Mário Filho (Maracanã);Maracanã;approved;official_name
+Estadio Jornalista Mário Filho (Maracanã) (Rio de Janeiro, Rio de Janeiro);Maracanã;approved;official_name
+Estádio Dr. Oswaldo Teixeira Duarte (São Paulo, São Paulo);Estádio Dr. Oswaldo Teixeira Duarte;approved;city_suffix
+Estádio Eládio de Barros Carvalho (Recife, Pernambuco);Estádio Eládio de Barros Carvalho;approved;city_suffix
+Estádio Municipal Dr. Adhemar de Barros;Estádio Fonte Luminosa;approved;official_name
+Estádio Municipal Dr. Adhemar de Barros (Araraquara, São Paulo);Estádio Fonte Luminosa;approved;official_name
+Estádio Municipal Dr. Adhemar de Barros, Araraquara (Araraquara, São Paulo);Estádio Fonte Luminosa;approved;official_name
+Estádio Francisco Stédile (Caxias do Sul, Rio Grande do Sul);Estádio Francisco Stédile;approved;city_suffix
+Estádio General Sílvio Raulino de Oliveira;Estádio Municipal General Raulino de Oliveira;approved;official_name
+Estádio General Sílvio Raulino de Oliveira (Volta Redonda, Rio de Janeiro);Estádio Municipal General Raulino de Oliveira;approved;official_name
+Estadio Raulino de Oliveira;Estádio Municipal General Raulino de Oliveira;approved;short_name
+Estádio Governador Magalhães Pinto;Mineirão;approved;official_name
+Estádio Governador Magalhães Pinto (Belo Horizonte, Minas Gerais);Mineirão;approved;official_name
+Estádio Mineirão;Mineirão;approved;known_name
+Governador Magalhães Pinto;Mineirão;approved;official_name
+Estádio Heriberto Hülse (Criciúma, Santa Catarina);Estádio Heriberto Hülse;approved;city_suffix
+Estádio Ilha do Urubu;Estádio Luso-Brasileiro;approved;temporary_name
+Estadio Kleber Andrade;Estádio Kleber José de Andrade;approved;short_name
+Estádio Moisés Lucarelli (Campinas, São Paulo);Estádio Moisés Lucarelli;approved;city_suffix
+Moisés Lucarelli;Estádio Moisés Lucarelli;approved;short_name
+Estádio Municipal João Havelange (Uberlândia, Minas Gerais);Estádio Municipal João Havelange;approved;city_suffix
+Estádio Municipal João Havelange, Uberlândia (Uberlândia, Minas Gerais);Estádio Municipal João Havelange;approved;city_suffix
+Estádio Municipal Paulo Machado de Carvalho;Estádio do Pacaembu;approved;official_name
+Estádio Municipal Paulo Machado de Carvalho (São Paulo, São Paulo);Estádio do Pacaembu;approved;official_name
+Mercado Livre Arena Pacaembu;Estádio do Pacaembu;approved;sponsored_name
+Pacaembú;Estádio do Pacaembu;approved;nickname
+Estádio Municipal Presidente Getúlio Vargas (Fortaleza, Ceará);Estádio Municipal Presidente Getúlio Vargas;approved;city_suffix
+Estadio Presidente Vargas;Estádio Municipal Presidente Getúlio Vargas;approved;short_name
+Estádio Municipal Radialista Mario Helenio;Estádio Municipal Radialista Mário Helênio;approved;normalized_name
+Estádio Municipal Radialista Mário Helênio (Juiz de Fora, Minas Gerais);Estádio Municipal Radialista Mário Helênio;approved;city_suffix
+Estádio Olímpico João Havelange (Rio de Janeiro);Estádio Nilton Santos;approved;former_name
+Estadio Olimpico Nilton Santos;Estádio Nilton Santos;approved;normalized_name
+Estádio Olimpico Pedro Ludovico;Estádio Olímpico Pedro Ludovico Teixeira;approved;short_name
+Estádio Orlando Scarpelli (Florianópolis, Santa Catarina);Estádio Orlando Scarpelli;approved;city_suffix
+Orlando Scarpelli;Estádio Orlando Scarpelli;approved;short_name
+Estádio Paulo Constantino (Presidente Prudente, São Paulo);Estádio Paulo Constantino;approved;city_suffix
+Estádio Romildo Vitor Gomes Ferreira (Mogi Mirim, São Paulo);Estádio Romildo Vitor Gomes Ferreira;approved;city_suffix
+Estadio Urbano Caldeira;Estádio Urbano Caldeira;approved;normalized_name
+Estádio Urbano Caldeira (Santos, São Paulo);Estádio Urbano Caldeira;approved;city_suffix
+Urbano Caldeira;Estádio Urbano Caldeira;approved;short_name
+Vila Belmiro;Estádio Urbano Caldeira;approved;nickname
+MRV Arena;Arena MRV;approved;normalized_name
+Arena Amazônia (Manaus, Amazonas);Arena Amazônia;approved;city_suffix
+Arena das Dunas;Arena das Dunas;approved;canonical
+Arena Joinville;Arena Joinville;approved;canonical
+Estadio Giulite Coutinho;Estádio Giulite Coutinho;approved;normalized_name
+Estádio Antônio Accioly;Estádio Antônio Accioly;approved;canonical
+Estádio de Hailé Pinheiro;Estádio de Hailé Pinheiro;approved;canonical
+Estádio Elmo Serejo Farias (Taguatinga, Distrito Federal);Estádio Elmo Serejo Farias;approved;city_suffix
+Estádio Érton Coelho de Queiroz;Estádio Érton Coelho de Queiroz;approved;canonical
+Estádio Estadual Jornalista Edgar Augusto Proença (Belém, Pará);Estádio Estadual Jornalista Edgar Augusto Proença;approved;city_suffix
+Estádio Estadual Lourival Baptista;Estádio Estadual Lourival Baptista;approved;canonical
+Estádio Governador João Castelo Ribeiro Gonçalves (São Luís, Maranhão);Estádio Governador João Castelo Ribeiro Gonçalves;approved;city_suffix
+Estádio João Lamego Neto (Ipatinga, Minas Gerais);Estádio João Lamego Neto;approved;city_suffix
+Estádio José Maria de Campos Maia;Estádio José Maria de Campos Maia;approved;canonical
+Estádio Municipal Dr. Novelli Júnior;Estádio Municipal Dr. Novelli Júnior;approved;canonical
+Estádio Municipal Eduardo José Farah (Presidente Prudente, São Paulo);Estádio Paulo Constantino;approved;former_name
+Estádio Municipal Jacy Scaff (Londrina, Paraná);Estádio Municipal Jacy Scaff;approved;city_suffix
+Estádio Municipal Juscelino Kubitschek de Oliveira (Itumbiara, Goiás);Estádio Municipal Juscelino Kubitschek de Oliveira;approved;city_suffix
+Estádio Municipal Prefeito Dilzon Luiz de Melo (Varginha, Minas Gerais);Estádio Municipal Prefeito Dilzon Luiz de Melo;approved;city_suffix
+Estádio Municipal Prefeito José Liberatti;Estádio Municipal Prefeito José Liberatti;approved;canonical
+Estádio Nabi Abi Chedid;Estádio Nabi Abi Chedid;approved;canonical
+Estádio Olímpico Monumental (Porto Alegre, Rio Grande do Sul);Estádio Olímpico Monumental;approved;city_suffix
+Estádio Palestra Itália (São Paulo, São Paulo);Estádio Palestra Itália;approved;historical_venue
+Estádio Primeiro de Maio (São Bernardo do Campo, São Paulo);Estádio Primeiro de Maio;approved;city_suffix
+Estádio Regional Willie Davids (Maringá, Paraná);Estádio Regional Willie Davids;approved;city_suffix
+Estádio Rei Pelé;Estádio Rei Pelé;approved;canonical
+Estádio Universitário Pedro Pedrossian;Estádio Universitário Pedro Pedrossian;approved;canonical
+Estádio Universitário Pedro Pedrossian (Campo Grande, Mato Grosso do Sul);Estádio Universitário Pedro Pedrossian;approved;city_suffix
+Estádio Walmir Campelo Bezerra (Gama, Distrito Federal);Estádio Walmir Campelo Bezerra;approved;city_suffix
+Estádio do Pacaembu;Estádio do Pacaembu;approved;canonical
+Estádio Serra Dourada;Estádio Serra Dourada;approved;canonical
+Estádio Olímpico Monumental;Estádio Olímpico Monumental;approved;canonical

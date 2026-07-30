@@ -3,6 +3,10 @@ import argparse
 from sqlalchemy import text
 
 from football_analytics.load.postgres import build_engine
+from football_analytics.load.venue_registry import (
+    count_pending_venue_aliases,
+    ensure_venue_registry,
+)
 
 
 MANUAL_REFERENCE_SQL = [
@@ -51,72 +55,21 @@ WAREHOUSE_TABLES_SQL = [
     """,
     """
     CREATE TABLE warehouse.dim_venue AS
-    WITH venue_sources AS (
-        SELECT
-            venue_id::bigint AS venue_id,
-            venue_name,
-            venue_address,
-            venue_city,
-            venue_capacity::bigint AS venue_capacity,
-            venue_image_url,
-            1 AS source_priority
-        FROM stage.venues
-        UNION ALL
-        SELECT DISTINCT
-            venue_id::bigint AS venue_id,
-            venue_name,
-            NULL::text AS venue_address,
-            venue_city,
-            NULL::bigint AS venue_capacity,
-            NULL::text AS venue_image_url,
-            2 AS source_priority
-        FROM stage.fixtures
-        WHERE venue_id IS NOT NULL
-    ),
-    remapped_sources AS (
-        SELECT
-            COALESCE(c.canonical_venue_id, v.venue_id) AS venue_id,
-            v.venue_name,
-            v.venue_address,
-            v.venue_city,
-            v.venue_capacity,
-            v.venue_image_url,
-            v.source_priority,
-            CASE
-                WHEN v.venue_id = COALESCE(c.canonical_venue_id, v.venue_id)
-                    THEN 0
-                ELSE 1
-            END AS mapping_priority
-        FROM venue_sources v
-        LEFT JOIN manual.venue_corrections c
-            ON c.source_venue_id = v.venue_id
-    ),
-    canonical_base AS (
-        SELECT DISTINCT ON (venue_id)
-            venue_id,
-            venue_name,
-            venue_address,
-            venue_city,
-            venue_capacity,
-            venue_image_url
-        FROM remapped_sources
-        ORDER BY venue_id, mapping_priority, source_priority
-    ),
-    direct_corrections AS (
-        SELECT *
-        FROM manual.venue_corrections
-        WHERE source_venue_id = canonical_venue_id
-    )
     SELECT
-        COALESCE(b.venue_id, c.canonical_venue_id) AS venue_id,
-        COALESCE(c.venue_name, b.venue_name) AS venue_name,
-        COALESCE(c.venue_address, b.venue_address) AS venue_address,
-        COALESCE(c.venue_city, b.venue_city) AS venue_city,
-        COALESCE(c.venue_capacity, b.venue_capacity) AS venue_capacity,
-        COALESCE(c.venue_image_url, b.venue_image_url) AS venue_image_url
-    FROM canonical_base b
-    FULL OUTER JOIN direct_corrections c
-        ON c.canonical_venue_id = b.venue_id
+        registry.venue_key,
+        registry.api_venue_id,
+        registry.venue_name,
+        registry.review_status,
+        registry.venue_address,
+        registry.venue_city,
+        registry.venue_capacity,
+        registry.venue_image_url
+    FROM manual.venue_registry registry
+    WHERE EXISTS (
+        SELECT 1
+        FROM manual.venue_name_alias alias
+        WHERE alias.venue_key = registry.venue_key
+    )
     """,
     """
     CREATE TABLE warehouse.dim_player AS
@@ -189,13 +142,13 @@ WAREHOUSE_TABLES_SQL = [
         ts.team_code,
         ts.founded,
         ts.team_logo_url,
-        COALESCE(vc.canonical_venue_id, ts.venue_id::bigint) AS venue_id,
+        alias.venue_key,
         ts.venue_name,
         ts.venue_city,
         ts.venue_capacity
     FROM stage.team_seasons ts
-    LEFT JOIN manual.venue_corrections vc
-        ON vc.source_venue_id = ts.venue_id::bigint
+    LEFT JOIN manual.venue_name_alias alias
+        ON alias.venue_name_raw = ts.venue_name
     """,
     """
     CREATE TABLE warehouse.fact_match AS
@@ -212,7 +165,8 @@ WAREHOUSE_TABLES_SQL = [
         status_short,
         elapsed,
         extra,
-        COALESCE(vc.canonical_venue_id, f.venue_id::bigint) AS venue_id,
+        alias.venue_key,
+        f.venue_name,
         home_team_id,
         away_team_id,
         home_goals,
@@ -237,8 +191,8 @@ WAREHOUSE_TABLES_SQL = [
         over25_goals,
         over35_goals
     FROM stage.fixtures f
-    LEFT JOIN manual.venue_corrections vc
-        ON vc.source_venue_id = f.venue_id::bigint
+    LEFT JOIN manual.venue_name_alias alias
+        ON alias.venue_name_raw = f.venue_name
     """,
     """
     CREATE TABLE warehouse.fact_team_match AS
@@ -328,7 +282,7 @@ WAREHOUSE_TABLES_SQL = [
 WAREHOUSE_CONSTRAINTS_SQL = [
     "ALTER TABLE warehouse.dim_date ADD PRIMARY KEY (date_key)",
     "ALTER TABLE warehouse.dim_team ADD PRIMARY KEY (team_id)",
-    "ALTER TABLE warehouse.dim_venue ADD PRIMARY KEY (venue_id)",
+    "ALTER TABLE warehouse.dim_venue ADD PRIMARY KEY (venue_key)",
     "ALTER TABLE warehouse.dim_player ADD PRIMARY KEY (player_id)",
     "ALTER TABLE warehouse.dim_season ADD PRIMARY KEY (season_key)",
     """
@@ -347,13 +301,14 @@ WAREHOUSE_CONSTRAINTS_SQL = [
     """
     ALTER TABLE warehouse.bridge_team_season
     ADD FOREIGN KEY (season_key) REFERENCES warehouse.dim_season (season_key),
-    ADD FOREIGN KEY (team_id) REFERENCES warehouse.dim_team (team_id)
+    ADD FOREIGN KEY (team_id) REFERENCES warehouse.dim_team (team_id),
+    ADD FOREIGN KEY (venue_key) REFERENCES warehouse.dim_venue (venue_key)
     """,
     """
     ALTER TABLE warehouse.fact_match
     ADD FOREIGN KEY (date_key) REFERENCES warehouse.dim_date (date_key),
     ADD FOREIGN KEY (season_key) REFERENCES warehouse.dim_season (season_key),
-    ADD FOREIGN KEY (venue_id) REFERENCES warehouse.dim_venue (venue_id),
+    ADD FOREIGN KEY (venue_key) REFERENCES warehouse.dim_venue (venue_key),
     ADD FOREIGN KEY (home_team_id) REFERENCES warehouse.dim_team (team_id),
     ADD FOREIGN KEY (away_team_id) REFERENCES warehouse.dim_team (team_id),
     ADD FOREIGN KEY (winner_team_id) REFERENCES warehouse.dim_team (team_id)
@@ -380,6 +335,11 @@ WAREHOUSE_CONSTRAINTS_SQL = [
 WAREHOUSE_INDEXES_SQL = [
     "CREATE INDEX idx_fact_match_season ON warehouse.fact_match (season_key)",
     "CREATE INDEX idx_fact_match_date_key ON warehouse.fact_match (date_key)",
+    "CREATE INDEX idx_fact_match_venue_key ON warehouse.fact_match (venue_key)",
+    """
+    CREATE INDEX idx_bridge_team_season_venue_key
+    ON warehouse.bridge_team_season (venue_key)
+    """,
     """
     CREATE INDEX idx_fact_team_match_team_season
     ON warehouse.fact_team_match (team_id, season_key)
@@ -403,10 +363,14 @@ def build_warehouse(stage_schema: str = "stage", warehouse_schema: str = "wareho
         )
 
     engine = build_engine()
+    pending_aliases = 0
 
     with engine.begin() as connection:
         for statement in MANUAL_REFERENCE_SQL:
             connection.execute(text(statement))
+
+        ensure_venue_registry(connection)
+        pending_aliases = count_pending_venue_aliases(connection)
 
         connection.execute(
             text(f'DROP SCHEMA IF EXISTS "{warehouse_schema}" CASCADE')
@@ -425,6 +389,11 @@ def build_warehouse(stage_schema: str = "stage", warehouse_schema: str = "wareho
             connection.execute(text(statement))
 
     print("Warehouse criado com sucesso.")
+    if pending_aliases:
+        print(
+            f"Atenção: {pending_aliases} nomes de estádios aguardam revisão "
+            "em manual.venue_alias_review."
+        )
 
 
 if __name__ == "__main__":

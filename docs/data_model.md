@@ -18,6 +18,8 @@ Uma linha por time. Guarda nome, código, país, ano de fundação e logo.
 stage.venues
 
 Uma linha por estádio. Guarda nome, cidade, capacidade, superfície e imagem.
+O `venue_id` desta camada é o identificador informado pela API e permanece sem
+curadoria.
 
 stage.players
 
@@ -39,6 +41,12 @@ stage.fixtures
 Uma linha por partida. Guarda rodada, data, árbitro, estádio, mandante,
 visitante, placar, gols por tempo, vencedor, empate, pontos, total de gols,
 ambos marcam e faixas over 1.5 / 2.5 / 3.5.
+`venue_id` e `venue_name` preservam os valores da origem. A resolução dos nomes
+e a criação da chave interna do estádio acontecem somente no warehouse.
+
+As partidas ausentes confirmadas e as correções de rodada são aplicadas a
+partir dos arquivos versionados em `reference`. Os JSONs raw permanecem
+imutáveis.
 
 stage.fixture_team_results
 

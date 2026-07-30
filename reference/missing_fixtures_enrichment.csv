@@ -1,0 +1,51 @@
+manual_fixture_id;fixture_date_utc;venue_name;halftime_home_goals;halftime_away_goals;review_status
+-2010001;2010-12-05 19:00:00;Arena da Baixada;1;0;confirmed
+-2010002;2010-12-05 19:00:00;Arena do Jacaré;0;0;confirmed
+-2010003;2010-12-05 19:00:00;Estádio Nilton Santos;0;0;confirmed
+-2010004;2010-12-05 19:00:00;Estádio Serra Dourada;1;1;confirmed
+-2010005;2010-12-05 19:00:00;Estádio Olímpico Monumental;2;0;confirmed
+-2010006;2010-12-02 23:00:00;Estádio Paulo Constantino;0;2;confirmed
+-2010007;2010-12-05 19:00:00;Estádio Urbano Caldeira;0;0;confirmed
+-2010008;2010-12-05 19:00:00;Morumbi;3;0;confirmed
+-2010009;2010-12-05 19:00:00;São Januário;1;0;confirmed
+-2010010;2010-12-05 20:00:00;Estádio Manoel Barradas;0;0;confirmed
+-2013001;2013-06-06 00:00:00;Estádio Municipal General Raulino de Oliveira;0;0;confirmed
+-2013002;2013-10-03 22:30:00;Arena Independência;2;0;confirmed
+-2013003;2013-07-21 19:00:00;Estádio Durival de Britto e Silva;1;1;confirmed
+-2013004;2013-07-21 21:30:00;Maracanã;0;1;confirmed
+-2013005;2013-07-21 19:00:00;Estádio Urbano Caldeira;1;1;confirmed
+-2013006;2013-07-28 19:00:00;Estádio do Pacaembu;0;0;confirmed
+-2013007;2013-07-28 21:30:00;Maracanã;0;1;confirmed
+-2013008;2013-07-27 21:30:00;Estádio Dr. Oswaldo Teixeira Duarte;2;1;confirmed
+-2013009;2013-08-01 00:50:00;Arena Fonte Nova;2;0;confirmed
+-2013010;2013-08-01 00:50:00;Estádio do Pacaembu;1;0;confirmed
+-2013011;2013-07-31 22:30:00;Maracanã;0;0;confirmed
+-2013012;2013-08-02 00:00:00;Estádio Serra Dourada;0;1;confirmed
+-2013013;2013-08-04 19:00:00;Estádio Durival de Britto e Silva;1;0;confirmed
+-2013014;2013-08-04 19:00:00;Estádio Heriberto Hülse;0;2;confirmed
+-2013015;2013-08-04 19:00:00;Arena do Grêmio;1;1;confirmed
+-2013016;2013-08-04 19:00:00;Estádio Moisés Lucarelli;0;0;confirmed
+-2013017;2013-09-26 00:00:00;Estádio Urbano Caldeira;0;0;confirmed
+-2013018;2013-08-04 21:30:00;Maracanã;1;2;confirmed
+-2013019;2013-08-04 21:30:00;Estádio Manoel Barradas;0;0;confirmed
+-2013020;2013-08-16 00:00:00;Maracanã;1;2;confirmed
+-2013021;2013-08-18 21:30:00;Estádio do Vale;0;0;confirmed
+-2013022;2013-09-08 19:00:00;Estádio do Pacaembu;0;0;confirmed
+-2013023;2013-09-08 19:00:00;Estádio Major Antônio Couto Pereira;2;0;confirmed
+-2013024;2013-09-14 21:30:00;Mineirão;1;0;confirmed
+-2013025;2013-09-25 22:30:00;Estádio Heriberto Hülse;1;1;confirmed
+-2013026;2013-10-06 19:00:00;Arena Independência;0;0;confirmed
+-2013027;2013-10-06 19:00:00;Estádio Durival de Britto e Silva;2;1;confirmed
+-2013028;2013-10-06 19:00:00;Estádio Francisco Stédile;0;0;confirmed
+-2013029;2013-10-06 19:00:00;Arena Pernambuco;1;1;confirmed
+-2013030;2013-10-10 00:50:00;Mineirão;0;0;confirmed
+-2013031;2013-10-11 00:00:00;Maracanã;1;0;confirmed
+-2013032;2013-10-09 22:30:00;Arena do Grêmio;0;1;confirmed
+-2013033;2013-10-10 00:50:00;Arena Pernambuco;1;2;confirmed
+-2013034;2013-10-10 00:00:00;Estádio Moisés Lucarelli;1;0;confirmed
+-2013035;2013-10-13 19:00:00;Estádio Francisco Stédile;2;1;confirmed
+-2013036;2013-10-13 19:00:00;Morumbi;0;0;confirmed
+-2013037;2013-11-09 23:30:00;Arena Fonte Nova;0;0;confirmed
+-2013038;2013-11-10 20:00:00;Estádio Moisés Lucarelli;0;3;confirmed
+-2013039;2013-11-10 22:30:00;Maracanã;1;2;confirmed
+-2013040;2013-12-08 20:00:00;Arena Joinville;2;1;confirmed

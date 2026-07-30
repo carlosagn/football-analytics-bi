@@ -1,0 +1,51 @@
+manual_fixture_id;season;round_number;home_team_id;home_team_name;away_team_id;away_team_name;fixture_date;home_goals;away_goals;source_url;round_mapping_method;review_status
+-2010001;2010;38;134;Atletico Paranaense;145;Avai;2010-12-05;1;0;https://www.futeboldomundo.com.br/campeonatos/62/edicao;missing_round;confirmed
+-2010002;2010;38;135;Cruzeiro;121;Palmeiras;2010-12-05;2;1;https://www.futeboldomundo.com.br/campeonatos/62/edicao;missing_round;confirmed
+-2010003;2010;38;124;Fluminense;138;Guarani Campinas;2010-12-05;1;0;https://www.futeboldomundo.com.br/campeonatos/62/edicao;missing_round;confirmed
+-2010004;2010;38;151;Goias;131;Corinthians;2010-12-05;1;1;https://www.futeboldomundo.com.br/campeonatos/62/edicao;missing_round;confirmed
+-2010005;2010;38;130;Gremio;120;Botafogo;2010-12-05;3;0;https://www.futeboldomundo.com.br/campeonatos/62/edicao;missing_round;confirmed
+-2010006;2010;38;4655;Grêmio Barueri;119;Internacional;2010-12-02;0;3;https://www.futeboldomundo.com.br/campeonatos/62/edicao;missing_round;confirmed
+-2010007;2010;38;128;Santos;127;Flamengo;2010-12-05;0;0;https://www.futeboldomundo.com.br/campeonatos/62/edicao;missing_round;confirmed
+-2010008;2010;38;126;Sao Paulo;1062;Atletico-MG;2010-12-05;4;0;https://www.futeboldomundo.com.br/campeonatos/62/edicao;missing_round;confirmed
+-2010009;2010;38;133;Vasco DA Gama;129;Ceara;2010-12-05;2;0;https://www.futeboldomundo.com.br/campeonatos/62/edicao;missing_round;confirmed
+-2010010;2010;38;136;Vitoria;144;Atletico Goianiense;2010-12-05;0;0;https://www.futeboldomundo.com.br/campeonatos/62/edicao;missing_round;confirmed
+-2013001;2013;4;133;Vasco DA Gama;1062;Atletico-MG;2013-06-05;2;0;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013002;2013;8;1062;Atletico-MG;139;Ponte Preta;2013-10-03;4;0;https://atletico.com.br/atletico-goleia-a-ponte-preta-sobe-para-5%C2%BA-e-fica-a-tres-pontos-do-g4/;external_confirmation;confirmed
+-2013003;2013;8;134;Atletico Paranaense;131;Corinthians;2013-07-21;1;1;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013004;2013;8;124;Fluminense;133;Vasco DA Gama;2013-07-21;1;3;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013005;2013;8;128;Santos;147;Coritiba;2013-07-21;2;2;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013006;2013;9;131;Corinthians;126;Sao Paulo;2013-07-28;0;0;https://ge.globo.com/jogo/brasileirao2013/28-07-2013/corinthians-sao-paulo.html;external_confirmation;confirmed
+-2013007;2013;9;127;Flamengo;120;Botafogo;2013-07-28;1;1;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013008;2013;9;1214;Portuguesa;134;Atletico Paranaense;2013-07-27;2;3;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013009;2013;10;118;Bahia;127;Flamengo;2013-07-31;3;0;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013010;2013;10;131;Corinthians;130;Gremio;2013-07-31;2;0;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013011;2013;10;124;Fluminense;135;Cruzeiro;2013-07-31;1;0;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013012;2013;10;151;Goias;133;Vasco DA Gama;2013-08-01;1;1;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013013;2013;11;134;Atletico Paranaense;151;Goias;2013-08-04;2;0;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013014;2013;11;140;Criciuma;131;Corinthians;2013-08-04;0;2;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013015;2013;11;130;Gremio;119;Internacional;2013-08-04;1;1;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013016;2013;11;139;Ponte Preta;124;Fluminense;2013-08-04;1;1;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013017;2013;11;128;Santos;755;Nautico Recife;2013-09-25;1;1;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013018;2013;11;133;Vasco DA Gama;120;Botafogo;2013-08-04;2;3;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013019;2013;11;136;Vitoria;1214;Portuguesa;2013-08-04;2;1;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013020;2013;14;120;Botafogo;119;Internacional;2013-08-15;3;3;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013021;2013;15;119;Internacional;1062;Atletico-MG;2013-08-18;0;0;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013022;2013;19;131;Corinthians;755;Nautico Recife;2013-09-08;0;0;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013023;2013;19;147;Coritiba;126;Sao Paulo;2013-09-08;2;0;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013024;2013;21;135;Cruzeiro;134;Atletico Paranaense;2013-09-14;1;0;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013025;2013;25;140;Criciuma;1062;Atletico-MG;2013-09-25;1;1;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013026;2013;26;1062;Atletico-MG;131;Corinthians;2013-10-06;0;0;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013027;2013;26;134;Atletico Paranaense;147;Coritiba;2013-10-06;2;1;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013028;2013;26;119;Internacional;124;Fluminense;2013-10-06;1;0;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013029;2013;26;755;Nautico Recife;135;Cruzeiro;2013-10-06;1;4;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013030;2013;27;135;Cruzeiro;126;Sao Paulo;2013-10-09;0;2;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013031;2013;27;127;Flamengo;119;Internacional;2013-10-10;2;1;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013032;2013;27;130;Gremio;140;Criciuma;2013-10-09;1;2;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013033;2013;27;755;Nautico Recife;120;Botafogo;2013-10-09;1;3;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013034;2013;27;139;Ponte Preta;1062;Atletico-MG;2013-10-09;2;0;https://atletico.com.br/atletico-perde-em-campinas/;external_confirmation;confirmed
+-2013035;2013;28;119;Internacional;755;Nautico Recife;2013-10-13;4;1;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013036;2013;28;126;Sao Paulo;131;Corinthians;2013-10-13;0;0;https://ge.globo.com/jogo/brasileirao2013/13-10-2013/sao-paulo-corinthians.html;external_confirmation;confirmed
+-2013037;2013;33;118;Bahia;1062;Atletico-MG;2013-11-09;0;0;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013038;2013;33;139;Ponte Preta;136;Vitoria;2013-11-10;0;3;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013039;2013;33;133;Vasco DA Gama;128;Santos;2013-11-10;2;2;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed
+-2013040;2013;38;134;Atletico Paranaense;133;Vasco DA Gama;2013-12-08;5;1;https://www.uol.com.br/esporte/futebol/campeonatos/brasileirao/2013/jogos/;reverse_leg;confirmed

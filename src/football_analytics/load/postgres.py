@@ -88,6 +88,10 @@ def load_stage_to_postgres(
 
     with engine.begin() as connection:
         connection.execute(text(f'CREATE SCHEMA IF NOT EXISTS "{schema}"'))
+        if schema == "stage":
+            connection.execute(
+                text("DROP VIEW IF EXISTS manual.venue_alias_review")
+            )
 
     for table_name in TABLE_LOAD_ORDER:
         df = _read_stage_csv(table_name, stage_dir)
@@ -104,6 +108,14 @@ def load_stage_to_postgres(
 
         loaded_tables[table_name] = len(df)
         print(f"{schema}.{table_name}: {len(df)} linhas carregadas.")
+
+    if schema == "stage":
+        from football_analytics.load.venue_registry import (
+            ensure_venue_registry,
+        )
+
+        with engine.begin() as connection:
+            ensure_venue_registry(connection)
 
     return loaded_tables
 

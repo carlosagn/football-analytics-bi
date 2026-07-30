@@ -43,6 +43,11 @@ Camada analítica final, organizada em dimensões e fatos para consumo pelo Powe
 BI. O warehouse possui chaves, relacionamentos e índices, além de uma camada
 persistente para correções manuais controladas.
 
+Como os identificadores de estádios da API são frequentemente ausentes ou
+inconsistentes, o modelo utiliza uma `venue_key` interna. Um cadastro
+persistente de aliases unifica variações como `Estádio do Maracanã` e
+`Estadio Jornalista Mário Filho`, mantendo também o nome bruto para auditoria.
+
 ## Modelo analítico
 Principais tabelas do warehouse:
 
@@ -90,6 +95,7 @@ Já foram concluídos:
 - construção do modelo dimensional no schema `warehouse`;
 - validação de chaves e relacionamentos;
 - tratamento persistente de correções manuais de estádios;
+- consolidação de 194 nomes de estádios em 79 locais canônicos;
 - reconstrução completa do histórico;
 - carga incremental isolada por temporada;
 - snapshots raw para futuras temporadas em andamento;
@@ -98,8 +104,8 @@ Já foram concluídos:
 
 Volumes atuais do warehouse:
 
-- **6.030** partidas;
-- **12.060** registros de desempenho por clube e partida;
+- **6.080** partidas;
+- **12.160** registros de desempenho por clube e partida;
 - **15.128** registros de estatísticas de jogadores por temporada;
 - **5.393** jogadores;
 - **39** clubes;
@@ -124,6 +130,7 @@ O guia completo de comandos está em
 football-analytics-bi/
 ├── data/                       # dados locais, não versionados
 ├── docs/                       # arquitetura e guias operacionais
+├── reference/                  # regras de negócio e aliases versionados
 ├── src/football_analytics/
 │   ├── config/                 # configurações e constantes
 │   ├── extract/                # consumo da API e snapshots raw
@@ -145,6 +152,7 @@ football-analytics-bi/
 - [Carga no PostgreSQL](docs/postgres_load.md)
 - [Inventário da API](docs/api_inventory.md)
 - [Correções manuais](docs/manual_data_corrections.md)
+- [Resultado da curadoria de estádios](docs/venue_curation.md)
 
 ## Princípios do projeto
 

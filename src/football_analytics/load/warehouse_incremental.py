@@ -9,6 +9,10 @@ from football_analytics.load.etl import (
     start_run,
 )
 from football_analytics.load.postgres import build_engine
+from football_analytics.load.venue_registry import (
+    count_pending_venue_aliases,
+    ensure_venue_registry,
+)
 
 
 UPSERT_DIMENSIONS_SQL = [
@@ -116,69 +120,26 @@ UPSERT_DIMENSIONS_SQL = [
         is_completed = EXCLUDED.is_completed
     """,
     """
-    WITH venue_sources AS (
-        SELECT
-            venue_id::bigint AS venue_id,
-            venue_name,
-            venue_address,
-            venue_city,
-            venue_capacity::bigint AS venue_capacity,
-            venue_image_url,
-            1 AS source_priority
-        FROM stage.venues
-        UNION ALL
-        SELECT DISTINCT
-            venue_id::bigint,
-            venue_name,
-            NULL::text,
-            venue_city,
-            NULL::bigint,
-            NULL::text,
-            2
-        FROM stage.fixtures
-        WHERE venue_id IS NOT NULL
-    ),
-    remapped AS (
-        SELECT
-            COALESCE(c.canonical_venue_id, v.venue_id) AS venue_id,
-            v.venue_name,
-            v.venue_address,
-            v.venue_city,
-            v.venue_capacity,
-            v.venue_image_url,
-            v.source_priority,
-            CASE WHEN v.venue_id = COALESCE(c.canonical_venue_id, v.venue_id)
-                THEN 0 ELSE 1 END AS mapping_priority
-        FROM venue_sources v
-        LEFT JOIN manual.venue_corrections c
-            ON c.source_venue_id = v.venue_id
-    ),
-    base AS (
-        SELECT DISTINCT ON (venue_id)
-            venue_id, venue_name, venue_address, venue_city,
-            venue_capacity, venue_image_url
-        FROM remapped
-        ORDER BY venue_id, mapping_priority, source_priority
-    ),
-    corrected AS (
-        SELECT
-            COALESCE(b.venue_id, c.canonical_venue_id) AS venue_id,
-            COALESCE(c.venue_name, b.venue_name) AS venue_name,
-            COALESCE(c.venue_address, b.venue_address) AS venue_address,
-            COALESCE(c.venue_city, b.venue_city) AS venue_city,
-            COALESCE(c.venue_capacity, b.venue_capacity) AS venue_capacity,
-            COALESCE(c.venue_image_url, b.venue_image_url) AS venue_image_url
-        FROM base b
-        FULL OUTER JOIN manual.venue_corrections c
-            ON c.source_venue_id = c.canonical_venue_id
-           AND c.canonical_venue_id = b.venue_id
-        WHERE c.source_venue_id IS NULL
-           OR c.source_venue_id = c.canonical_venue_id
-    )
     INSERT INTO warehouse.dim_venue
-    SELECT * FROM corrected
-    ON CONFLICT (venue_id) DO UPDATE SET
+    SELECT
+        registry.venue_key,
+        registry.api_venue_id,
+        registry.venue_name,
+        registry.review_status,
+        registry.venue_address,
+        registry.venue_city,
+        registry.venue_capacity,
+        registry.venue_image_url
+    FROM manual.venue_registry registry
+    WHERE EXISTS (
+        SELECT 1
+        FROM manual.venue_name_alias alias
+        WHERE alias.venue_key = registry.venue_key
+    )
+    ON CONFLICT (venue_key) DO UPDATE SET
+        api_venue_id = EXCLUDED.api_venue_id,
         venue_name = EXCLUDED.venue_name,
+        review_status = EXCLUDED.review_status,
         venue_address = EXCLUDED.venue_address,
         venue_city = EXCLUDED.venue_city,
         venue_capacity = EXCLUDED.venue_capacity,
@@ -205,13 +166,13 @@ INSERT_SEASON_SQL = [
         ts.team_code,
         ts.founded,
         ts.team_logo_url,
-        COALESCE(vc.canonical_venue_id, ts.venue_id::bigint),
+        alias.venue_key,
         ts.venue_name,
         ts.venue_city,
         ts.venue_capacity
     FROM stage.team_seasons ts
-    LEFT JOIN manual.venue_corrections vc
-        ON vc.source_venue_id = ts.venue_id::bigint
+    LEFT JOIN manual.venue_name_alias alias
+        ON alias.venue_name_raw = ts.venue_name
     WHERE ts.season = :season
     """,
     """
@@ -229,7 +190,8 @@ INSERT_SEASON_SQL = [
         f.status_short,
         f.elapsed,
         f.extra,
-        COALESCE(vc.canonical_venue_id, f.venue_id::bigint),
+        alias.venue_key,
+        f.venue_name,
         f.home_team_id,
         f.away_team_id,
         f.home_goals,
@@ -254,8 +216,8 @@ INSERT_SEASON_SQL = [
         f.over25_goals,
         f.over35_goals
     FROM stage.fixtures f
-    LEFT JOIN manual.venue_corrections vc
-        ON vc.source_venue_id = f.venue_id::bigint
+    LEFT JOIN manual.venue_name_alias alias
+        ON alias.venue_name_raw = f.venue_name
     WHERE f.season = :season
     """,
     """
@@ -393,6 +355,7 @@ def _validate_stage(connection, season):
 def refresh_warehouse_season(season, force=False):
     engine = build_engine()
     run_id = None
+    pending_aliases = 0
 
     try:
         with engine.begin() as connection:
@@ -402,6 +365,8 @@ def refresh_warehouse_season(season, force=False):
 
         with engine.begin() as connection:
             counts = _validate_stage(connection, season)
+            ensure_venue_registry(connection)
+            pending_aliases = count_pending_venue_aliases(connection)
 
             for statement in UPSERT_DIMENSIONS_SQL:
                 connection.execute(text(statement), {"season": season})
@@ -412,6 +377,11 @@ def refresh_warehouse_season(season, force=False):
 
         finish_run(engine, run_id, "success", row_counts=counts)
         print(f"Warehouse atualizado somente para a temporada {season}.")
+        if pending_aliases:
+            print(
+                f"Atenção: {pending_aliases} nomes de estádios aguardam "
+                "revisão em manual.venue_alias_review."
+            )
         return counts
     except Exception as exc:
         if run_id is not None:

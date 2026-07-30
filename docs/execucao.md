@@ -13,8 +13,8 @@ PYTHONPATH=src ./venv/Scripts/python.exe -m football_analytics.load.stage
 PYTHONPATH=src ./venv/Scripts/python.exe -m football_analytics.load.warehouse
 ```
 
-Ele recria os CSVs, substitui o stage, reconstrói o warehouse e reaplica
-`manual.venue_corrections`.
+Ele recria os CSVs, substitui o stage, reconstrói o warehouse e reaplica o
+cadastro persistente de estádios e seus aliases de nomes.
 
 # 2. Buscar 2010–2025 na API e fazer a carga completa
 
@@ -185,6 +185,13 @@ ORDER BY season_key;
 | Importar temporada já encerrada | `season_snapshot` → `close_season` |
 | Encerrar temporada em andamento | snapshot final → `close_season` |
 | Corrigir temporada concluída | `refresh_season --force` |
+
+# Correções históricas automáticas
+
+As reconstruções completas e as cargas incrementais de 2010 ou 2013 aplicam
+automaticamente os arquivos `reference/fixture_round_corrections.csv` e
+`reference/missing_fixtures_review.csv`. Não é necessário inserir partidas
+manualmente em `fact_match` ou `fact_team_match`.
 
 # Quais comandos acessam a API
 

@@ -7,6 +7,243 @@ from football_analytics.utils.helpers import load_json
 from football_analytics.utils.raw_snapshots import latest_complete_snapshot
 
 
+FIXTURE_ROUND_CORRECTIONS_FILE = "fixture_round_corrections.csv"
+MISSING_FIXTURES_FILE = "missing_fixtures_review.csv"
+MISSING_FIXTURES_ENRICHMENT_FILE = "missing_fixtures_enrichment.csv"
+
+
+def _read_confirmed_reference(filepath, required_columns):
+    path = Path(filepath)
+    if not path.exists():
+        raise FileNotFoundError(
+            f"Arquivo de refer\u00eancia n\u00e3o encontrado: {path}"
+        )
+
+    frame = pd.read_csv(path, sep=";")
+    missing_columns = required_columns.difference(frame.columns)
+    if missing_columns:
+        raise ValueError(
+            f"Colunas ausentes em {path}: {sorted(missing_columns)}"
+        )
+
+    status = frame["review_status"].astype(str).str.strip().str.lower()
+    return frame.loc[status == "confirmed"].copy()
+
+
+def _apply_round_corrections(fixtures, reference_dir):
+    required_columns = {
+        "fixture_id",
+        "season",
+        "expected_round_number",
+        "corrected_round_number",
+        "review_status",
+    }
+    corrections = _read_confirmed_reference(
+        Path(reference_dir) / FIXTURE_ROUND_CORRECTIONS_FILE,
+        required_columns,
+    )
+
+    available_seasons = set(fixtures["Season"].dropna().astype(int))
+    corrections = corrections[
+        corrections["season"].astype(int).isin(available_seasons)
+    ]
+
+    for correction in corrections.to_dict("records"):
+        fixture_id = int(correction["fixture_id"])
+        season = int(correction["season"])
+        expected_round = int(correction["expected_round_number"])
+        corrected_round = int(correction["corrected_round_number"])
+        target = (fixtures["FixtureID"] == fixture_id) & (
+            fixtures["Season"] == season
+        )
+
+        if target.sum() != 1:
+            raise ValueError(
+                f"Corre\u00e7\u00e3o de rodada esperava uma partida para "
+                f"fixture_id={fixture_id}, season={season}; "
+                f"encontradas: {int(target.sum())}."
+            )
+
+        current_round = fixtures.loc[target, "RoundNumber"].iloc[0]
+        if not pd.isna(current_round) and int(current_round) == corrected_round:
+            continue
+        if pd.isna(current_round) or int(current_round) != expected_round:
+            raise ValueError(
+                f"Rodada inesperada para fixture_id={fixture_id}: "
+                f"esperada {expected_round}, encontrada {current_round}."
+            )
+
+        fixtures.loc[target, "RoundNumber"] = corrected_round
+        fixtures.loc[target, "Round"] = (
+            f"Regular Season - {corrected_round}"
+        )
+
+    return fixtures
+
+
+def _manual_fixture_rows(fixtures, reference_dir):
+    required_columns = {
+        "manual_fixture_id",
+        "season",
+        "round_number",
+        "home_team_id",
+        "home_team_name",
+        "away_team_id",
+        "away_team_name",
+        "fixture_date",
+        "home_goals",
+        "away_goals",
+        "source_url",
+        "review_status",
+    }
+    manual = _read_confirmed_reference(
+        Path(reference_dir) / MISSING_FIXTURES_FILE,
+        required_columns,
+    )
+    enrichment = _read_confirmed_reference(
+        Path(reference_dir) / MISSING_FIXTURES_ENRICHMENT_FILE,
+        {
+            "manual_fixture_id",
+            "fixture_date_utc",
+            "venue_name",
+            "halftime_home_goals",
+            "halftime_away_goals",
+            "review_status",
+        },
+    )
+    if enrichment["manual_fixture_id"].duplicated().any():
+        raise ValueError("Existem enriquecimentos de partidas duplicados.")
+    manual = manual.merge(
+        enrichment.drop(columns=["review_status"]),
+        on="manual_fixture_id",
+        how="left",
+        validate="one_to_one",
+    )
+    available_seasons = set(fixtures["Season"].dropna().astype(int))
+    manual = manual[manual["season"].astype(int).isin(available_seasons)]
+
+    if manual.empty:
+        return []
+    if manual["manual_fixture_id"].duplicated().any():
+        raise ValueError("Existem IDs manuais de partidas duplicados.")
+    if (manual["manual_fixture_id"].astype(int) >= 0).any():
+        raise ValueError("IDs manuais de partidas devem ser negativos.")
+
+    rows = []
+    existing_matchups = set(
+        zip(
+            fixtures["Season"].astype(int),
+            fixtures["HomeTeamID"].astype(int),
+            fixtures["AwayTeamID"].astype(int),
+        )
+    )
+    for item in manual.to_dict("records"):
+        matchup = (
+            int(item["season"]),
+            int(item["home_team_id"]),
+            int(item["away_team_id"]),
+        )
+        if matchup in existing_matchups:
+            continue
+
+        home_goals = int(item["home_goals"])
+        away_goals = int(item["away_goals"])
+        fixture_date_utc = item.get("fixture_date_utc")
+        if pd.isna(fixture_date_utc):
+            fixture_date_utc = item["fixture_date"]
+        fixture_date_utc = pd.to_datetime(
+            fixture_date_utc,
+            errors="coerce",
+            utc=True,
+        )
+        if pd.isna(fixture_date_utc):
+            raise ValueError(
+                f"Data UTC inv\u00e1lida para {item['manual_fixture_id']}."
+            )
+
+        halftime_home = item.get("halftime_home_goals")
+        halftime_away = item.get("halftime_away_goals")
+        halftime_home = (
+            None if pd.isna(halftime_home) else int(halftime_home)
+        )
+        halftime_away = (
+            None if pd.isna(halftime_away) else int(halftime_away)
+        )
+        if (
+            halftime_home is not None
+            and halftime_home > home_goals
+        ) or (
+            halftime_away is not None
+            and halftime_away > away_goals
+        ):
+            raise ValueError(
+                f"Placar do intervalo inv\u00e1lido para "
+                f"{item['manual_fixture_id']}."
+            )
+
+        venue_name = item.get("venue_name")
+        venue_name = None if pd.isna(venue_name) else venue_name
+        home_points, away_points = _points(home_goals, away_goals, "FT")
+        winner_team_id = None
+        if home_goals > away_goals:
+            winner_team_id = int(item["home_team_id"])
+        elif away_goals > home_goals:
+            winner_team_id = int(item["away_team_id"])
+
+        round_number = int(item["round_number"])
+        total_goals = home_goals + away_goals
+        rows.append(
+            {
+                "FixtureID": int(item["manual_fixture_id"]),
+                "LeagueID": 71,
+                "LeagueName": "Serie A",
+                "Country": "Brazil",
+                "Season": int(item["season"]),
+                "Round": f"Regular Season - {round_number}",
+                "RoundNumber": round_number,
+                "FixtureDateUTC": fixture_date_utc,
+                "_FixtureDateOverride": item["fixture_date"],
+                "FixtureTimestamp": int(fixture_date_utc.timestamp()),
+                "Timezone": "UTC",
+                "Referee": None,
+                "StatusLong": "Match Finished",
+                "StatusShort": "FT",
+                "Elapsed": 90,
+                "Extra": None,
+                "VenueID": None,
+                "VenueName": venue_name,
+                "VenueCity": None,
+                "HomeTeamID": int(item["home_team_id"]),
+                "HomeTeamName": item["home_team_name"],
+                "AwayTeamID": int(item["away_team_id"]),
+                "AwayTeamName": item["away_team_name"],
+                "HomeGoals": home_goals,
+                "AwayGoals": away_goals,
+                "HalftimeHomeGoals": halftime_home,
+                "HalftimeAwayGoals": halftime_away,
+                "FulltimeHomeGoals": home_goals,
+                "FulltimeAwayGoals": away_goals,
+                "ExtratimeHomeGoals": None,
+                "ExtratimeAwayGoals": None,
+                "PenaltyHomeGoals": None,
+                "PenaltyAwayGoals": None,
+                "WinnerTeamID": winner_team_id,
+                "ResultLabel": _result_label(home_goals, away_goals),
+                "IsDraw": home_goals == away_goals,
+                "HomePoints": home_points,
+                "AwayPoints": away_points,
+                "GoalDifference": home_goals - away_goals,
+                "TotalGoals": total_goals,
+                "BothTeamsScored": home_goals > 0 and away_goals > 0,
+                "Over15Goals": total_goals > 1.5,
+                "Over25Goals": total_goals > 2.5,
+                "Over35Goals": total_goals > 3.5,
+            }
+        )
+
+    return rows
+
+
 def _raw_fixture_files(raw_dir: str = "data/raw/fixtures", season=None):
     raw_path = Path(raw_dir)
 
@@ -64,7 +301,11 @@ def _result_label(home_goals, away_goals):
     return "Draw"
 
 
-def transform_fixtures(raw_dir: str = "data/raw/fixtures", season=None):
+def transform_fixtures(
+    raw_dir: str = "data/raw/fixtures",
+    season=None,
+    reference_dir: str = "reference",
+):
     """Match fact table, one row per fixture."""
 
     rows = []
@@ -172,6 +413,17 @@ def transform_fixtures(raw_dir: str = "data/raw/fixtures", season=None):
     if df.empty:
         return df
 
+    df = df.drop_duplicates(subset=["FixtureID"]).reset_index(drop=True)
+    df = _apply_round_corrections(df, reference_dir)
+    manual_rows = _manual_fixture_rows(df, reference_dir)
+    if manual_rows:
+        df = pd.concat([df, pd.DataFrame(manual_rows)], ignore_index=True)
+
+    if df["FixtureID"].duplicated().any():
+        raise ValueError(
+            "Existem FixtureID duplicados ap\u00f3s as corre\u00e7\u00f5es."
+        )
+
     df["FixtureDateUTC"] = pd.to_datetime(
         df["FixtureDateUTC"],
         errors="coerce",
@@ -179,16 +431,35 @@ def transform_fixtures(raw_dir: str = "data/raw/fixtures", season=None):
     )
     df["FixtureDate"] = df["FixtureDateUTC"].dt.date
     df["DateKey"] = df["FixtureDateUTC"].dt.strftime("%Y%m%d")
+    if "_FixtureDateOverride" in df.columns:
+        override = pd.to_datetime(
+            df["_FixtureDateOverride"],
+            errors="coerce",
+        )
+        override_mask = override.notna()
+        df.loc[override_mask, "FixtureDate"] = override.loc[
+            override_mask
+        ].dt.date
+        df.loc[override_mask, "DateKey"] = override.loc[
+            override_mask
+        ].dt.strftime("%Y%m%d")
+        df = df.drop(columns=["_FixtureDateOverride"])
 
-    return df.drop_duplicates(subset=["FixtureID"]).reset_index(drop=True)
+    return df.reset_index(drop=True)
 
 
 def transform_fixture_team_results(
-    raw_dir: str = "data/raw/fixtures", season=None
+    raw_dir: str = "data/raw/fixtures",
+    season=None,
+    reference_dir: str = "reference",
 ):
     """One row per team in each fixture, useful for standings-like analysis."""
 
-    fixtures = transform_fixtures(raw_dir, season=season)
+    fixtures = transform_fixtures(
+        raw_dir,
+        season=season,
+        reference_dir=reference_dir,
+    )
     rows = []
 
     for item in fixtures.to_dict("records"):
@@ -244,8 +515,16 @@ def transform_fixture_team_results(
     return pd.DataFrame(rows)
 
 
-def transform_dates(raw_dir: str = "data/raw/fixtures", season=None):
-    fixtures = transform_fixtures(raw_dir, season=season)
+def transform_dates(
+    raw_dir: str = "data/raw/fixtures",
+    season=None,
+    reference_dir: str = "reference",
+):
+    fixtures = transform_fixtures(
+        raw_dir,
+        season=season,
+        reference_dir=reference_dir,
+    )
 
     if fixtures.empty:
         return pd.DataFrame()

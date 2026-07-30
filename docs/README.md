@@ -7,5 +7,6 @@
 - `execucao.md`: guia direto de comandos para cada tipo de carga.
 - `incremental_pipeline.md`: snapshots, cargas por temporada e conclusão
   calculada por `dim_season.is_completed`.
-- `manual_data_corrections.md`: correções persistentes complementadas
-  manualmente.
+- `manual_data_corrections.md`: fluxo reproduzível de curadoria manual.
+- `venue_curation.md`: resultado, critérios e validações dos estádios.
+- `missing_fixtures.md`: mapeamento e preenchimento das partidas ausentes.
